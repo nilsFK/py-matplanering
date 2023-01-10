@@ -1,6 +1,6 @@
 # py-matplanering
-================
 py-matplantering används för att planera matschema utifrån en uppsättning av maträtter och tillhörande regler.
+Reglerna appliceras på maträtterna för att skapat ett matschema.
 
 Installation
 ------------
@@ -8,11 +8,12 @@ Installation
 
 Användning
 ----------
-> python matplanera.py [-h] foodset ruleset
+> python matplanera.py [-h] foodset ruleset output
 
 där
 * **foodset**: obligatorisk. sökvägen till filen som innehåller maträtter.
 * **ruleset**: obligatorisk. sökvägen till filen som innehåller regler.
+* **output**: obligatorisk. sökvägen till filen som innehåller det producerade matschemat.
 
 För ytterligare instruktioner, kör:
 
@@ -24,7 +25,7 @@ Exempel
 
 Projektstatus
 -------------
-* Pågående...
+* TODO: exempel på input (foodset, ruleset) och output.
 
 Stöd
 ----
