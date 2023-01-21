@@ -3,8 +3,164 @@
     "data": [
         {
             "id": 1,
-            "name": "food item 1",
-            "etc": "etc..."
+            "name": "Kebab with sticky rice",
+            "link": null,
+            "difficulty": "easy",
+            "type": "beef",
+            "class": null,
+            "meta": {
+                "sides": ["rice"]
+            },
+            "startdate": "2023-01-01",
+            "enddate": "9999-12-31",
+            "active": 1,
+            "free_text": "",
+            "rules": ["weekend_only"]
+        },
+        {
+            "id": 2,
+            "name": "Sushi mix",
+            "link": null,
+            "difficulty": "easy",
+            "type": "fish",
+            "class": "takeaway",
+            "meta": {
+                "sides": ["rice"]
+            },
+            "startdate": "2023-01-01",
+            "enddate": "9999-12-31",
+            "active": 1,
+            "free_text": "Take away sushi",
+            "rules": ["quarter_3"]
+        },
+        {
+            "id": 3,
+            "name": "Hamburger",
+            "link": null,
+            "difficulty": "medium",
+            "type": "beef",
+            "class": null,
+            "meta": {
+                "sides": ["salad"]
+            },
+            "startdate": "2023-01-01",
+            "enddate": "9999-12-31",
+            "active": 1,
+            "free_text": null,
+            "rules": ["max_once_a_month"]
+        },
+        {
+            "id": 4,
+            "name": "Beef stroganoff",
+            "link": null,
+            "difficulty": "medium",
+            "type": "beef",
+            "class": null,
+            "meta": {
+                "sides": ["rice"]
+            },
+            "startdate": "2023-01-01",
+            "enddate": "9999-12-31",
+            "active": 1,
+            "free_text": null,
+            "rules": ["max_once_a_month"]
+        },
+        {
+            "id": 5,
+            "name": "vacant",
+            "vacant": true,
+            "link": null,
+            "difficulty": null,
+            "type": null,
+            "class": null,
+            "meta": {
+                "sides": [null]
+            },
+            "startdate": "2023-01-01",
+            "enddate": "9999-12-31",
+            "active": 1,
+            "free_text": null,
+            "rules": ["once_a_week"]
+        },
+        {
+            "id": 6,
+            "name": "Pizza",
+            "link": null,
+            "difficulty": "easy",
+            "type": "hybrid",
+            "class": "takeaway",
+            "meta": {
+                "sides": []
+            },
+            "startdate": "2023-01-01",
+            "enddate": "9999-12-31",
+            "active": 1,
+            "free_text": null,
+            "rules": []
+        },
+        {
+            "id": 7,
+            "name": "[REDACTED]",
+            "link": null,
+            "difficulty": null,
+            "type": null,
+            "class": null,
+            "meta": {
+                "sides": []
+            },
+            "startdate": "2023-01-01",
+            "enddate": "9999-12-31",
+            "active": 0,
+            "free_text": null,
+            "rules": []
+        },
+        {
+            "id": 8,
+            "name": "Carnitas",
+            "link": null,
+            "difficulty": "hard",
+            "type": "pork",
+            "class": "tacos",
+            "meta": {
+                "sides": ["pico_de_gallo"]
+            },
+            "startdate": "2023-01-01",
+            "enddate": "9999-12-31",
+            "active": 1,
+            "free_text": "Carnitas recipe made with beer",
+            "rules": ["weekend_only"]
+        },
+        {
+            "id": 9,
+            "name": "Lasagna",
+            "link": null,
+            "difficulty": "easy",
+            "type": "beef",
+            "class": null,
+            "meta": {
+                "sides": null
+            },
+            "startdate": "2023-01-01",
+            "enddate": "9999-12-31",
+            "active": 1,
+            "free_text": null,
+            "rules": ["weekend_only"]
+        },
+        {
+            "id": 10,
+            "name": "San Choy Bau",
+            "link": null,
+            "difficulty": null,
+            "type": "pork",
+            "class": null,
+            "meta": {
+                "sides": "rice"
+            },
+            "startdate": "2023-01-01",
+            "enddate": "9999-12-31",
+            "active": 1,
+            "free_text": null,
+            "rules": []
         }
     ]
 }

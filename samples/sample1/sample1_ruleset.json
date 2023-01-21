@@ -1,3 +1,110 @@
 {
-    "rule": "nada"
+    "name": "Ruleset 1",
+    "ruleset": [
+        {
+            "name": "weekday_only",
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["mon", "tue", "wed", "thu", "fri"]
+                }
+            ]
+        },
+        {
+            "name": "weekend_only",
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["sat", "sun"]
+                }
+            ]
+        },
+        {
+            "name": "quarter_1",
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["q1"]
+                }
+            ]
+        },
+        {
+            "name": "quarter_2",
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["q2"]
+                }
+            ]
+        },
+        {
+            "name": "quarter_3",
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["q3"]
+                }
+            ]
+        },
+        {
+            "name": "quarter_4",
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["q4"]
+                }
+            ]
+        },
+        {
+            "name": "max_once_a_month",
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "cap",
+                    "cap": [
+                        {
+                            "max": 1,
+                            "time_unit": "month"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "max_once_a_week",
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "cap",
+                    "cap": [
+                        {
+                            "max": 1,
+                            "time_unit": "week"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "min_once_a_month",
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "cap",
+                    "cap": [
+                        {
+                            "min": 1,
+                            "time_unit": "month"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
 }
