@@ -12,6 +12,8 @@ def make_schedule(args: dict) -> dict:
     raw_rule_set = args['rule_set']
     automator_ctrl = AutomatorController()
     schedule = automator_ctrl.build(raw_tagged_data, raw_rule_set)
+    if schedule is False:
+        print("Failed to create schedule due to: %s" % (automator_ctrl.get_build_error('msg')))
     return schedule
 
 if __name__ == '__main__':
@@ -28,22 +30,6 @@ if __name__ == '__main__':
         metavar='N',
         type=str,
         help='Source file to which final schedule will be written')
-    # argparser.add_argument('-p', '--parser',
-    #     type=str,
-    #     help='Parser from which we will parse the source',
-    #     required=True)
-    # argparser.add_argument('-f', '--formatter',
-    #     type=str,
-    #     help='Formatter from which we will format the parsed source',
-    #     required=True)
-    # argparser.add_argument('-a', '--app',
-    #     type=str,
-    #     help='The app which will accept the parsed and formatted content',
-    #     required=True)
-    # argparser.add_argument('-pe', '--persist',
-    #     action='store_true',
-    #     default=False,
-    #     help='Persists results of parsing/formatting to database. Requires a valid dialect.')
     args = argparser.parse_args()
     # Get output path
     schedule_output_path_str = args.schedule_output_path
@@ -64,5 +50,7 @@ if __name__ == '__main__':
         tagged_data=tagged_data_dct,
         rule_set=rule_set_dct
     ))
-    print("Schedule:", schedule)
-    Path(schedule_output_path_str).write_text(json.dumps(schedule.as_dict()))
+    if schedule is not False:
+        print("Writing schedule to file...")
+        Path(schedule_output_path_str).write_text(json.dumps(schedule.as_dict()))
+        print("OK!")
