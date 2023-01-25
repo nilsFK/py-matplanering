@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from abc import (ABCMeta, abstractmethod)
+from py_matplanering.core.input import Input
+from py_matplanering.core.schedule import Schedule
 
-# Abstract base class (TODO)
-class PlannerBase:
-    def __init__(self, as_dict: bool=False):
+class PlannerBase(metaclass=ABCMeta):
+    @abstractmethod
+    def plan_init(self, inp: Input, options: dict) -> Schedule:
         pass
+
+    @abstractmethod
+    def plan_schedule(self, sch: Schedule):
+        pass
+

@@ -6,11 +6,14 @@ from py_matplanering.utilities.common import (
     as_obj, as_dict
 )
 from py_matplanering.core.automator_controller import AutomatorController
+from py_matplanering.core.planner.planner_randomizer import PlannerRandomizer
 
 def make_schedule(args: dict) -> dict:
     raw_tagged_data = args['tagged_data']
     raw_rule_set = args['rule_set']
-    automator_ctrl = AutomatorController()
+    automator_ctrl = AutomatorController('2023-01-01', '2024-01-01')
+    planner = PlannerRandomizer()
+    automator_ctrl.set_planner(planner)
     schedule = automator_ctrl.build(raw_tagged_data, raw_rule_set)
     if schedule is False:
         print("Failed to create schedule due to: %s" % (automator_ctrl.get_build_error('msg')))
@@ -51,6 +54,6 @@ if __name__ == '__main__':
         rule_set=rule_set_dct
     ))
     if schedule is not False:
-        print("Writing schedule to file...")
+        print("Writing schedule to file:", schedule.as_dict())
         Path(schedule_output_path_str).write_text(json.dumps(schedule.as_dict()))
         print("OK!")

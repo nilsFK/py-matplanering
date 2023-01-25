@@ -17,6 +17,12 @@ def format_date(date, format='%Y-%m-%d'):
 def format_datetime(datetime, format_='%Y-%m-%d %H:%M:%S'):
     return datetime.strftime(format_)
 
+def parse_datetime(datetime_str, datetime_format='%Y-%m-%d %H:%M:%S'):
+    return datetime.datetime.strptime(datetime_str, datetime_format)
+
+def parse_date(date_str, date_format='%Y-%m-%d'):
+    return datetime.datetime.strptime(date_str, date_format)
+
 def is_time_struct(data):
     return isinstance(data, time.struct_time)
 
@@ -28,3 +34,38 @@ def is_datetime(data):
 
 def time_now(format_="%Y-%m-%d %H:%M:%S"):
     return time.strftime(format_)
+
+def month_delta(date, delta):
+    m, y = (date.month+delta) % 12, date.year + ((date.month)+delta-1) // 12
+    if not m: m = 12
+    d = min(date.day, [31,
+        29 if y%4==0 and not y%400==0 else 28,31,30,31,30,31,31,30,31,30,31][m-1])
+    return date.replace(day=d, month=m, year=y)
+
+def add_months(date, months):
+    return month_delta(date, months)
+
+def add_days(date, days):
+    return date + datetime.timedelta(days=days)
+
+# Get montly dates between a date interval
+# get_monthly_dates("2017-01-01", "2017-12-01") would produce
+# 2017-01-01, 2017-02-01, 2017-03-01, ..., 2017-12-01
+def get_monthly_dates(start_date: str, end_date: str) -> list:
+    dates = []
+    next_date = start_date
+    while next_date <= end_date:
+        dates.append(next_date)
+        next_date = format_date(add_months(parse_date(next_date), +1))
+    return dates
+
+# Get date range between a date interval
+# get_date_range("2017-01-01", "2017-12-01") would produce
+# 2017-01-01, 2017-01-02, 2017-01-03, ..., 2017-12-01
+def get_date_range(start_date: str, end_date: str) -> list:
+    dates = []
+    next_date = start_date
+    while next_date <= end_date:
+        dates.append(next_date)
+        next_date = format_date(add_days(parse_date(next_date), +1))
+    return dates
