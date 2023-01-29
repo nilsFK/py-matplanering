@@ -77,5 +77,6 @@ def camelcase_to_underscore(name):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 def underscore_to_camelcase(name):
+    """ under_score to UnderScore """
     return ''.join(x.capitalize() or '_' for x in name.split('_'))
 

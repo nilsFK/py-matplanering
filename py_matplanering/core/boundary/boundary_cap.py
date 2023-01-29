@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from boundary import BoundaryBase
+from py_matplanering.core.boundary.boundary_base import BoundaryBase
 
 class BoundaryCap(BoundaryBase):
     pass

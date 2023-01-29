@@ -1,6 +1,6 @@
 # py-matplanering
-py-matplantering används för att planera matschema utifrån en uppsättning av maträtter och tillhörande regler.
-Reglerna appliceras på maträtterna för att skapat ett matschema.
+py-matplantering används för att planera scheman utifrån en uppsättning av händelser (events) och tillhörande regler (ruleset). Varje händelse kan referera till en eller flera regler för att skapa en begränsning (boundary).
+Reglerna appliceras på händelserna för att skapat ett schema.
 
 Installation
 ------------
@@ -8,12 +8,12 @@ Installation
 
 Användning
 ----------
-> python matplanera.py [-h] foodset ruleset output
+> python matplanera.py [-h] <event path> <ruleset path> <output path>
 
 där
-* **foodset**: obligatorisk. sökvägen till filen som innehåller maträtter.
-* **ruleset**: obligatorisk. sökvägen till filen som innehåller regler.
-* **output**: obligatorisk. sökvägen till filen som innehåller det producerade matschemat.
+* **event path**: obligatorisk. sökvägen till filen som innehåller händelser.
+* **ruleset path**: obligatorisk. sökvägen till filen som innehåller regler.
+* **output path**: obligatorisk. sökvägen till filen som innehåller det producerade schemat.
 
 För ytterligare instruktioner, kör:
 
@@ -21,12 +21,18 @@ För ytterligare instruktioner, kör:
 
 Exempel
 -------
-> python matplanera.py foodset.json ruleset.json
+> python matplanera.py
+>   samples/sample1/sample1_tagged_data.json
+>   samples/sample1/sample1/sample1_ruleset.json
+>   samples/sample1/sample_output.json
 
 Projektstatus
 -------------
-* TODO: exempel på input (foodset, ruleset) och output.
+* Event input - OK
+* PlannerRandomizer implementation - OK
+* PlannerEugene implementation - TODO
+* Schedule input - TODO
 
 Stöd
 ----
-Testas regelbundet för Python 3.3.x
+Testas regelbundet för Python 3.5.x+

@@ -11,7 +11,9 @@ from py_matplanering.core.planner.planner_randomizer import PlannerRandomizer
 def make_schedule(args: dict) -> dict:
     raw_tagged_data = args['tagged_data']
     raw_rule_set = args['rule_set']
-    automator_ctrl = AutomatorController('2023-01-01', '2024-01-01')
+    automator_ctrl = AutomatorController('2023-01-01', '2024-01-01', dict(
+        include_props=['id', 'name']
+    ))
     planner = PlannerRandomizer()
     automator_ctrl.set_planner(planner)
     schedule = automator_ctrl.build(raw_tagged_data, raw_rule_set)
@@ -41,7 +43,7 @@ if __name__ == '__main__':
     if len(tagged_data_str) == 0:
         raise Exception("tagged data source file is empty. Expected: JSON formatted data")
     tagged_data_dct = json.loads(tagged_data_str)
-    print("Tagged data:", tagged_data_dct)
+    print("Event data:", tagged_data_dct)
 
     # Get rule set
     rule_set_str = Path(args.rule_set_path).read_text()
@@ -54,6 +56,5 @@ if __name__ == '__main__':
         rule_set=rule_set_dct
     ))
     if schedule is not False:
-        print("Writing schedule to file:", schedule.as_dict())
         Path(schedule_output_path_str).write_text(json.dumps(schedule.as_dict()))
         print("OK!")
