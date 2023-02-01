@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
+
 from py_matplanering.core.schedule_input import ScheduleInput
 from py_matplanering.core.validator import Validator
 from py_matplanering.core.scheduler import Scheduler
@@ -14,7 +14,7 @@ class AutomatorController:
         self.__sch_options = dict(
             startdate=startdate,
             enddate=enddate,
-            include_props=None, # None => include all props, [] => exclude all prop
+            include_props=None, # None => include all props, [] => exclude all props
             daily_event_limit=None
         )
         self.__sch_options.update(sch_options)
@@ -29,9 +29,9 @@ class AutomatorController:
     def set_planner(self, planner: PlannerBase):
         self.__planner = planner
 
-    def build(self, tagged_data: dict, rule_set: dict) -> Any:
+    def build(self, event_data: dict, rule_set: dict) -> Any:
         self.__built_run = True
-        inp = ScheduleInput(tagged_data, rule_set)
+        inp = ScheduleInput(event_data, rule_set)
         validator = Validator()
         is_valid, validation_rs, validation_msg = validator.pre_validate(inp)
         if not is_valid:

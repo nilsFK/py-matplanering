@@ -80,7 +80,7 @@
             "enddate": "9999-12-31",
             "active": 1,
             "free_text": null,
-            "rules": ["once_a_week"]
+            "rules": ["max_once_a_week"]
         },
         {
             "id": 6,

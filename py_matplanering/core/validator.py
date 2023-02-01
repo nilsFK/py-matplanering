@@ -46,18 +46,18 @@ class Validator:
             return Validator.report_error('rule_set is empty', error_container=rs)
         if not rule_set.get('name'):
             return Validator.report_error('rule_set is missing required property "name"', error_container=rs)
-        if not rule_set.get('ruleset'):
-            return Validator.report_error('rule_set is missing required property "ruleset"', error_container=rs)
+        if not rule_set.get('rule_set'):
+            return Validator.report_error('rule_set is missing required property "rule_set"', error_container=rs)
         required_props = ['name', 'rules']
-        for idx, row in enumerate(rule_set['ruleset']):
+        for idx, row in enumerate(rule_set['rule_set']):
             id_ = row['id']
             for prop in required_props:
                 if not row.get(prop):
-                    return Validator.report_error('rule_set->ruleset is missing required property "{prop}"'.format(**{'prop': prop}), index=idx, error_container=rs, id_=id_)
+                    return Validator.report_error('rule_set->rule_set is missing required property "{prop}"'.format(**{'prop': prop}), index=idx, error_container=rs, id_=id_)
             if not isinstance(row['rules'], list):
-                return Validator.report_error('rule_set->ruleset.rules is not a list', index=idx, error_container=rs, id_=id_)
+                return Validator.report_error('rule_set->rule_set.rules is not a list', index=idx, error_container=rs, id_=id_)
             if len(row['rules']) == 0:
-                return Validator.report_error('rule_set->ruleset.rules is empty', index=idx, error_container=rs, id_=id_)
+                return Validator.report_error('rule_set->rule_set.rules is empty', index=idx, error_container=rs, id_=id_)
         if rs['ok'] and rs['msg']:
             raise Exception('Validation error: marked as OK but contains msg. Expected msg=None, instead got: %s' % (rs['msg']))
         rs['ok'] = True

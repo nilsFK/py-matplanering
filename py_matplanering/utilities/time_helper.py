@@ -8,6 +8,8 @@ built in packages.
 import ntpath
 import time, datetime
 
+from typing import (Any)
+
 def format_time_struct(time_struct, format='%Y-%m-%d'):
     return time.strftime(format, time_struct)
 
@@ -69,3 +71,9 @@ def get_date_range(start_date: str, end_date: str) -> list:
         dates.append(next_date)
         next_date = format_date(add_days(parse_date(next_date), +1))
     return dates
+
+def get_weekday_name(date: Any, short=False, to_lower=False):
+    named_wd = date.strftime('%A')
+    if short:
+        named_wd = named_wd[:3]
+    return named_wd

@@ -130,3 +130,6 @@ dmypy.json
 
 # Custom ignored repository files
 sample_output.json
+config/config.ini
+samples/sample1/config/config.ini
+samples/sample2/config/config.ini

@@ -23,5 +23,10 @@ def __load_modules(module_names: list, module_folder) -> dict:
     return rs
 
 def load_boundaries(boundaries: list) -> dict:
-    rs = __load_modules(boundaries, "py_matplanering.core.boundary")
-    return rs
+    return __load_modules(boundaries, "py_matplanering.core.boundary")
+
+def load_planners(planners: list) -> dict:
+    return __load_modules(planners, "py_matplanering.core.planner")
+
+def load_planner(planner: str):
+    return load_planners([planner])[planner]

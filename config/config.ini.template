@@ -1,0 +1,7 @@
+[Config]
+event_data_path = <path>
+rule_set_path = <path>
+output_path = <path>
+planner = <str>
+startdate = <date>
+enddate = <date>

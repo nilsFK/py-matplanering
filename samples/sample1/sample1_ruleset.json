@@ -1,6 +1,6 @@
 {
     "name": "Ruleset 1",
-    "ruleset": [
+    "rule_set": [
         {
             "name": "weekday_only",
             "id": 1,
