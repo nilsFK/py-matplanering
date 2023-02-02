@@ -33,7 +33,6 @@ class ScheduleBuilder:
         final_rule_set = schedule_helper.convert_rule_set(self.__inp, boundaries)
         matching_dates = set()
         for event in event_data:
-            print("Event:", event)
             for event_rule in event['rules']:
                 for apply_rule in final_rule_set[event_rule]['rules']:
                     # TODO: cache boundary object
@@ -41,11 +40,9 @@ class ScheduleBuilder:
                     apply_boundary[apply_rule['boundary']] = apply_rule[apply_rule['boundary']]
                     boundary_obj = apply_rule['boundary_cls']()
                     boundary_obj.set_boundary(apply_boundary)
-                    print("Matching event...")
                     date_matches = boundary_obj.match_event(event, all_dates)
                     matching_dates = all_dates_set & set(date_matches)
             matching_dates = sorted(list(matching_dates))
-            print("Matching dates:", matching_dates)
             event['candidates'] = matching_dates
             for date in event['candidates']:
                 self.__candidates[date]['events'].append(event)
@@ -54,10 +51,13 @@ class ScheduleBuilder:
         for next_date in sorted(list(self.__candidates)):
             day_obj = self.__candidates[next_date]
             if len(day_obj['events']) == 0:
+                print("Planning empty events")
                 selected_event = self.__planner.plan_missing_event(next_date, day_obj)
             elif len(day_obj['events']) == 1:
-                selected_event = day_obj['events'][0]
+                print("Planning single event")
+                selected_event = self.__planner.plan_single_event(next_date, day_obj['events'][0])
             elif len(day_obj['events']) > 1:
+                print("Planning multiple events")
                 selected_event = self.__planner.plan_resolve_conflict(next_date, day_obj['events'])
 
             if selected_event:

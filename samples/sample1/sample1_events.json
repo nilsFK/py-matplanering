@@ -161,6 +161,28 @@
             "active": 1,
             "free_text": null,
             "rules": []
+        },
+        {
+            "id": 11,
+            "name": "Christmas family meal",
+            "link": null,
+            "difficulty": null,
+            "type": null,
+            "class": "holiday_dinner",
+            "meta": {
+                "sides": [
+                    "christmas_pudding",
+                    "mince_pies",
+                    "christmas_cake",
+                    "panettone",
+                    "yule_log_cake"
+                ]
+            },
+            "startdate": "2023-01-01",
+            "enddate": "9999-12-31",
+            "active": 1,
+            "free_text": null,
+            "rules": ["christmas"]
         }
     ]
 }

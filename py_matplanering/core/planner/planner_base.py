@@ -37,3 +37,12 @@ class PlannerBase(metaclass=ABCMeta):
         """
         pass
 
+    def plan_single_event(self, date: str, event):
+        """ Default implementation of planning a single event.
+            May be overriden by implemented subclass.
+            This will plan a date with one possible selected candidate
+            event. It returns the single event since there's nothing else
+            to choose from.
+        """
+        return event
+

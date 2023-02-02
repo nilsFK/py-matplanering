@@ -4,7 +4,7 @@ from py_matplanering.core.boundary.boundary_base import BoundaryBase
 from py_matplanering.utilities import time_helper
 
 class BoundaryPeriod(BoundaryBase):
-    def match_event(self, event: dict, dates: list) -> bool:
+    def match_event(self, event: dict, dates: list) -> list:
         print("Trying to match event (BoundaryPeriod):", event, "with dates", dates, "against", self.boundary)
         matching_dates = []
         for date in dates:

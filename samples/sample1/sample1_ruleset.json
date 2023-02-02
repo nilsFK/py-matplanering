@@ -114,6 +114,26 @@
                     ]
                 }
             ]
+        },
+        {
+            "name": "christmas",
+            "id": 10,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "date",
+                    "date": [
+                        {
+                            "values": [
+                                {
+                                    "month_number": 12,
+                                    "day_of_month": 25
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

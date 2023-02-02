@@ -1,6 +1,6 @@
 # py-matplanering
 py-matplantering används för att planera scheman utifrån en uppsättning av händelser (events) och tillhörande regler (ruleset). Varje händelse kan referera till en eller flera regler för att skapa en begränsning (boundary).
-Reglerna appliceras på händelserna för att skapat ett schema.
+Reglerna appliceras på händelserna för att skapa ett schema.
 
 Installation
 ------------
@@ -8,23 +8,15 @@ Installation
 
 Användning
 ----------
-> python matplanera.py [-h] <event path> <ruleset path> <output path>
-
-där
-* **event path**: obligatorisk. sökvägen till filen som innehåller händelser.
-* **ruleset path**: obligatorisk. sökvägen till filen som innehåller regler.
-* **output path**: obligatorisk. sökvägen till filen som innehåller det producerade schemat.
+> python planera.py [-h] path/to/config.ini
 
 För ytterligare instruktioner, kör:
 
-> python matplanera.py -h
+> python planera.py -h
 
 Exempel
 -------
-> python matplanera.py
->   samples/sample1/sample1_tagged_data.json
->   samples/sample1/sample1/sample1_ruleset.json
->   samples/sample1/sample_output.json
+> python planera.py samples/sample1/config/sample_config.ini
 
 Projektstatus
 -------------

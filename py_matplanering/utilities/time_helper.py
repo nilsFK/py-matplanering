@@ -13,8 +13,8 @@ from typing import (Any)
 def format_time_struct(time_struct, format='%Y-%m-%d'):
     return time.strftime(format, time_struct)
 
-def format_date(date, format='%Y-%m-%d'):
-    return date.strftime(format)
+def format_date(date, format_='%Y-%m-%d'):
+    return date.strftime(format_)
 
 def format_datetime(datetime, format_='%Y-%m-%d %H:%M:%S'):
     return datetime.strftime(format_)
@@ -36,6 +36,13 @@ def is_datetime(data):
 
 def time_now(format_="%Y-%m-%d %H:%M:%S"):
     return time.strftime(format_)
+
+def get_year(d_=None):
+    if isinstance(d_, str):
+        return d_[:4]
+    if d_ is None:
+        return time_now("%Y")
+    return format_date(d_)[:4]
 
 def month_delta(date, delta):
     m, y = (date.month+delta) % 12, date.year + ((date.month)+delta-1) // 12
