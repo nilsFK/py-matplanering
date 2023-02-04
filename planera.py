@@ -67,5 +67,8 @@ if __name__ == '__main__':
         planner=config_data['planner']
     ))
     if schedule is not False:
-        Path(config_data['output_path']).write_text(json.dumps(schedule.as_dict()))
+        sch_dct = schedule.as_dict()
+        if sch_dct is None:
+            raise Exception('Unexpected None returned by schedule.as_dict()')
+        Path(config_data['output_path']).write_text(json.dumps(sch_dct))
         print("OK!")

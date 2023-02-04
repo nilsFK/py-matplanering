@@ -65,10 +65,10 @@ class Validator:
 
     @staticmethod
     def pre_validate(inp: ScheduleInput) -> tuple:
-        validation_rule_set = Validator.__validate_rule_set(inp.get_rule_set())
+        validation_rule_set = Validator.__validate_rule_set(inp.get_org_rule_set())
         if not validation_rule_set['ok']:
             return (False, validation_rule_set['data'], validation_rule_set['msg'])
-        validation_event_data = Validator.__validate_event_data(inp.get_event_data())
+        validation_event_data = Validator.__validate_event_data(inp.get_org_event_data())
         if not validation_event_data['ok']:
             return (False, validation_event_data['data'], validation_event_data['msg'])
         return (True, None, None)

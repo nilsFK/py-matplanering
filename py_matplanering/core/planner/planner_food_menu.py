@@ -8,6 +8,8 @@ from py_matplanering.utilities.schedule_builder import ScheduleBuilder
 
 import random
 
+from typing import Any
+
 class PlannerFoodMenu(PlannerBase):
     def __init__(self):
         pass
@@ -19,16 +21,16 @@ class PlannerFoodMenu(PlannerBase):
         self.sch_builder.build(inp)
         return self.sch_builder.extract_schedule()
 
-    def plan_resolve_conflict(self, date: str, conflicting_events: list):
+    def plan_resolve_conflict(self, date: str, conflicting_events: list) -> Any:
         for event in conflicting_events:
-            print("Conflicting event:", event['name'], " on date ", date)
+            print("Conflicting event:", event.get_name(), " on date ", date)
         r_event = random.choice(conflicting_events)
-        print("Selected:", r_event['name'])
+        print("Selected:", r_event.get_name())
         return r_event
 
-    def plan_missing_event(self, date: str, day_obj: dict):
+    def plan_missing_event(self, date: str, day_obj: dict) -> Any:
         print("Missing events on date:", date)
         events = self.sch_builder.get_events()
         r_event = random.choice(events)
-        print("Selected:", r_event['name'])
+        print("Selected:", r_event.get_name())
         return r_event

@@ -3,6 +3,9 @@
 from abc import (ABCMeta, abstractmethod)
 from py_matplanering.core.schedule_input import ScheduleInput
 from py_matplanering.core.schedule import Schedule
+from py_matplanering.core.schedule import ScheduleEvent
+
+from typing import Any
 
 """
     PlannerBase is an abstract base class (ABC). It does not implement
@@ -21,7 +24,7 @@ class PlannerBase(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def plan_resolve_conflict(self, conflicting_events: list):
+    def plan_resolve_conflict(self, conflicting_events: list) -> Any:
         """ if one day contains multiple events
             a conflict will surface. such conflicts needs to
             be resolved within this method.
@@ -30,14 +33,14 @@ class PlannerBase(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def plan_missing_event(self, date: str, day_obj: dict) -> dict:
+    def plan_missing_event(self, date: str, day_obj: dict) -> Any:
         """ occurs when a particular day is missing events.
             return one event (however not required, return
             None to skip assigning an event to that day)
         """
         pass
 
-    def plan_single_event(self, date: str, event):
+    def plan_single_event(self, date: str, event: ScheduleEvent) -> dict:
         """ Default implementation of planning a single event.
             May be overriden by implemented subclass.
             This will plan a date with one possible selected candidate

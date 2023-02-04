@@ -7,6 +7,8 @@ from py_matplanering.utilities import schedule_helper
 
 import random
 
+from typing import Any
+
 class PlannerRandomizer(PlannerBase):
     def __init__(self):
         pass
@@ -20,10 +22,10 @@ class PlannerRandomizer(PlannerBase):
         ))
         return self.sch_builder.extract_schedule()
 
-    def plan_resolve_conflict(self, conflicts: list):
+    def plan_resolve_conflict(self, conflicts: list) -> Any:
         raise Exception('conflicts within PlannerRandomizer should not be able to occur')
 
-    def plan_missing_event(self, date: str, day_obj: dict):
+    def plan_missing_event(self, date: str, day_obj: dict) -> Any:
         events = self.sch_builder.get_events()
         r_event = random.choice(events)
         return r_event
