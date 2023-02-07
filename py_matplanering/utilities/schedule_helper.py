@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from py_matplanering.core.schedule_input import ScheduleInput
-from py_matplanering.core.schedule import Schedule
+from py_matplanering.core.schedule.schedule_input import ScheduleInput
+from py_matplanering.core.schedule.schedule import Schedule
 
 from py_matplanering.utilities import (common, loader)
 

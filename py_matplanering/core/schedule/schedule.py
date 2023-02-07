@@ -9,6 +9,7 @@ from py_matplanering.utilities.time_helper import (
 
 import copy
 
+# ScheduleEvent needs to be in schedule.py to avoid some import issues.
 class ScheduleEvent:
     def __init__(self, event_dct: dict):
         if not isinstance(event_dct, dict):

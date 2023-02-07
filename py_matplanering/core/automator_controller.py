@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from py_matplanering.core.schedule_input import ScheduleInput
+from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.validator import Validator
 from py_matplanering.core.scheduler import Scheduler
 from py_matplanering.core.planner.planner_base import PlannerBase
+
 from typing import Any
 
 class AutomatorController:

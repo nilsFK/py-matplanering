@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from py_matplanering.core.schedule import ScheduleEvent
+from py_matplanering.core.schedule.schedule import ScheduleEvent
 
 class ScheduleInput:
     def __init__(self, event_data: dict, rule_set: dict):

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from abc import (ABCMeta, abstractmethod)
 
-from py_matplanering.core.schedule import ScheduleEvent
+from py_matplanering.core.schedule.schedule import ScheduleEvent
 
 class BoundaryBase(metaclass=ABCMeta):
     def set_boundary(self, boundary):

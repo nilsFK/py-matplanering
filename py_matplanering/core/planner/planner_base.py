@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from abc import (ABCMeta, abstractmethod)
-from py_matplanering.core.schedule_input import ScheduleInput
-from py_matplanering.core.schedule import Schedule
-from py_matplanering.core.schedule import ScheduleEvent
+from py_matplanering.core.schedule.schedule_input import ScheduleInput
+from py_matplanering.core.schedule.schedule import Schedule
+from py_matplanering.core.schedule.schedule import ScheduleEvent
 
 from typing import Any
 
@@ -48,4 +48,7 @@ class PlannerBase(metaclass=ABCMeta):
             to choose from.
         """
         return event
+
+    def set_schedule_builder(self, sch_builder):
+        self._sch_builder = sch_builder
 
