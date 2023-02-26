@@ -10,16 +10,22 @@ class ScheduleInput:
         self.event_data_lst = None
         self.rule_set_lst = None
         self.__converted = False
+        self.__require_active = False
 
-    def get_event_data(self) -> list:
+    def get_event_data(self, require_active: bool=False) -> list:
         # Lazy convertion of event data (dict) to schedule events (list of ScheduleEvent)
+        if require_active != self.__require_active:
+            self.__converted = False
         if self.__converted is False:
             tmp_event_data = []
             for row in self.org_event_data_dct['data']:
+                if require_active and row['active'] == 0:
+                    continue
                 tmp_event_data.append(ScheduleEvent(row))
             self.event_data_lst = tmp_event_data
             del tmp_event_data
             self.__converted = True
+        self.__require_active = require_active
         return self.event_data_lst
 
     def get_org_event_data(self):

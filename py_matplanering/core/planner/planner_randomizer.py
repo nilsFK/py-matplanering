@@ -28,6 +28,6 @@ class PlannerRandomizer(PlannerBase):
         return r_event
 
     def plan_missing_event(self, date: str, day_obj: dict) -> Any:
-        events = self._sch_builder.get_events()
+        events = self._sch_builder.get_schedule_events()
         r_event = random.choice(events)
         return r_event

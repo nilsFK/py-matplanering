@@ -6,7 +6,7 @@ from py_matplanering.core.schedule.schedule_builder import ScheduleBuilder
 from py_matplanering.core.planner.planner_base import PlannerBase
 from py_matplanering.core.handler.handler_impl import (
     SetupHandler,
-    DecideCandidateHandler,
+    DeterminateDecideCandidateHandler,
     IndeterminatePlanningHandler,
     DeterminatePlanningHandler,
     ResolveConflictHandler,
@@ -26,7 +26,7 @@ class Scheduler:
     def create_schedule(self, sch_inp: ScheduleInput):
         handler_order = [
             SetupHandler().with_input(self.__planner, sch_inp, self.__sch_options),
-            DecideCandidateHandler(),
+            DeterminateDecideCandidateHandler(),
             IndeterminatePlanningHandler(),
             DeterminatePlanningHandler(),
             ResolveConflictHandler(),

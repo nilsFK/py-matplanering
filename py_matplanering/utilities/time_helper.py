@@ -6,7 +6,7 @@ and should not import anything except for
 built in packages.
 """
 import ntpath
-import time, datetime
+import time, datetime, math
 
 from typing import (Any)
 
@@ -79,8 +79,35 @@ def get_date_range(start_date: str, end_date: str) -> list:
         next_date = format_date(add_days(parse_date(next_date), +1))
     return dates
 
-def get_weekday_name(date: Any, short=False, to_lower=False):
+def get_weekday_name(date: Any, short: bool=False, to_lower: bool=False) -> str:
     named_wd = date.strftime('%A')
     if short:
         named_wd = named_wd[:3]
     return named_wd
+
+def get_week_number(date: Any) -> int:
+    return date.isocalendar()[1]
+    # python 3.9+
+    # return parse_date(date).isocalendar().week
+
+def get_named_weekdays(short: bool=False, to_lower: bool=False) -> list:
+    nwd = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+    ]
+    if to_lower:
+        nwd = [row.casefold() for row in nwd]
+    if short:
+        nwd = [row[0:3] for row in nwd]
+    return nwd
+
+def get_quarter(date=None):
+    """ returns a number between 1-4 representing quarter of date """
+    if date is None:
+        date = datetime.datetime.now()
+    return int(math.ceil(date.month/3.))

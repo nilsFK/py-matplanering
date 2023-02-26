@@ -8,8 +8,9 @@ from py_matplanering.utilities import (common, loader)
 def make_schedule(sch_options: dict):
     return Schedule(sch_options)
 
-def extract_boundaries(inp: ScheduleInput) -> dict:
-    rule_set = inp.get_rule_set()
+def load_boundaries(sch_inp: ScheduleInput) -> dict:
+    """ Loads all boundaries as required by the schedule input. """
+    rule_set = sch_inp.get_rule_set()
     boundaries = {}
     for rule_set in rule_set['rule_set']:
         for rule in rule_set['rules']:
@@ -34,3 +35,22 @@ def convert_rule_set(inp: ScheduleInput, boundaries: dict) -> dict:
                 cls_name = common.underscore_to_camelcase('boundary_' + rule['boundary'])
                 rule['boundary_cls'] = getattr(rule['boundary_module'], cls_name)
     return rule_set_rs
+
+def convert_boundaries(boundaries: dict) -> dict:
+    converted_boundaries = {}
+    for boundary_key in list(boundaries):
+        boundary_module = boundaries[boundary_key]
+        cls_name = common.underscore_to_camelcase(boundary_key)
+        boundary_cls = getattr(boundary_module, cls_name)
+        converted_boundaries[boundary_key] = boundary_cls()
+    return converted_boundaries
+
+def filter_boundaries(boundaries: dict, apply_filters: dict={}) -> dict:
+    filtered_boundaries = {}
+    for boundary_key in list(boundaries):
+        boundary_obj = boundaries[boundary_key]
+        if apply_filters.get('boundary_class'):
+            print("boundary class of %s is %s" % (boundary_obj, boundary_obj.get_boundary_class()))
+            if boundary_obj.get_boundary_class() == apply_filters['boundary_class']:
+                filtered_boundaries[boundary_key] = boundary_obj
+    return filtered_boundaries

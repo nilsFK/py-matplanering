@@ -1,16 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import argparse, json
+import argparse, json, copy
 from pathlib import Path
 
 from py_matplanering.utilities.common import (
     as_obj, as_dict, underscore_to_camelcase, camelcase_to_underscore
 )
 from py_matplanering.utilities.config import readConfig
+from py_matplanering.utilities import time_helper
 from py_matplanering.core.automator_controller import AutomatorController
 from py_matplanering.core.planner.planner_randomizer import PlannerRandomizer
 from py_matplanering.core.planner.planner_food_menu import PlannerFoodMenu
+from py_matplanering.core.schedule.schedule import Schedule
 from py_matplanering.utilities import loader
+
+from tabulate import tabulate
 
 def make_schedule(args: dict) -> dict:
     raw_event_data = args['event_data']
@@ -33,6 +37,28 @@ def make_schedule(args: dict) -> dict:
     if schedule is False:
         print("Failed to create schedule due to: %s" % (automator_ctrl.get_build_error('msg')))
     return schedule
+
+def make_schedule_table(sch: Schedule) -> list:
+    headers = ['Date', 'Week', 'Day', 'Item', 'Boundaries', 'Method']
+    days = sch.get_days()
+    table = []
+    for date in days:
+        row = []
+        row.append(date)
+        row.append(time_helper.get_week_number(time_helper.parse_date(date)))
+        row.append(time_helper.get_weekday_name(time_helper.parse_date(date)))
+        for sch_event in sch.get_events_by_date(date):
+            row2 = copy.copy(row)
+            row2.append(sch_event.get_name())
+            # Add boundaries
+            boundaries = sch_event.get_boundaries()
+            printable_boundaries = []
+            for boundary in boundaries:
+                printable_boundaries.append(type(boundary).__name__)
+            row2.append(", ".join(printable_boundaries))
+            row2.append(sch_event.get_metadata('method'))
+            table.append(row2)
+    return table, headers
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser(description='Process sources to produce a schedule.')
@@ -71,4 +97,8 @@ if __name__ == '__main__':
         if sch_dct is None:
             raise Exception('Unexpected None returned by schedule.as_dict()')
         Path(config_data['output_path']).write_text(json.dumps(sch_dct))
+        # Output in tabulate form
+        table, headers = make_schedule_table(schedule)
+        print("Total planned events:", len(schedule.get_events()))
+        print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
         print("OK!")

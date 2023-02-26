@@ -11,6 +11,9 @@ from typing import Any
 
 class PlannerFoodMenu(PlannerBase):
     def plan_init(self, sch_options: dict) -> Schedule:
+        # Current version only allows one event each day.
+        # TODO: Add multi event support.
+        sch_options['daily_event_limit'] = 1
         schedule = schedule_helper.make_schedule(sch_options)
         return schedule
 
@@ -23,7 +26,7 @@ class PlannerFoodMenu(PlannerBase):
 
     def plan_missing_event(self, date: str, day_obj: dict) -> Any:
         print("Missing events on date:", date)
-        events = self._sch_builder.get_events()
+        events = self._sch_builder.get_schedule_events()
         r_event = random.choice(events)
         print("Selected:", r_event.get_name())
         return r_event

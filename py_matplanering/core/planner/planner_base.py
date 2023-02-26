@@ -40,7 +40,7 @@ class PlannerBase(metaclass=ABCMeta):
         """
         pass
 
-    def plan_single_event(self, date: str, event: ScheduleEvent) -> dict:
+    def plan_single_event(self, date: str, event: ScheduleEvent) -> ScheduleEvent:
         """ Default implementation of planning a single event.
             May be overriden by implemented subclass.
             This will plan a date with one possible selected candidate
@@ -48,6 +48,12 @@ class PlannerBase(metaclass=ABCMeta):
             to choose from.
         """
         return event
+
+    def plan_multi_event(self, date: str, events: []):
+        """ Plans multiple events at once.
+        Currently not in use.
+        """
+        raise NotImplementedError
 
     def set_schedule_builder(self, sch_builder):
         self._sch_builder = sch_builder
