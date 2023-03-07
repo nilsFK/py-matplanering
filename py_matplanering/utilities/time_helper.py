@@ -79,6 +79,29 @@ def get_date_range(start_date: str, end_date: str) -> list:
         next_date = format_date(add_days(parse_date(next_date), +1))
     return dates
 
+# Gets week range between a date interval
+# get_week_range("2017-01-01", "2017-12-01") would produce
+# [ [2017-01-01], [2017-01-02, 2017-01-03, ..., 2017-01-08], [2017-01-09, ...] ]
+# Starting day is always monday
+def get_week_range(start_date: str, end_date: str) -> list:
+    week_range = []
+    next_date = start_date
+    week_buffer = []
+    prev_date = None
+    while next_date <= end_date:
+        if prev_date and get_week_number(next_date) != get_week_number(prev_date):
+            # new week, clear buffer
+            week_range.append(week_buffer)
+            week_buffer = []
+        else:
+            # same week
+            week_buffer.append(next_date)
+        next_date = format_date(add_days(parse_date(next_date), +1))
+    if len(week_buffer) > 0:
+        # adds remaining buffer to last week range
+        week_range[len(week_range)-1].extend(week_buffer)
+    return week_range
+
 def get_weekday_name(date: Any, short: bool=False, to_lower: bool=False) -> str:
     named_wd = date.strftime('%A')
     if short:
@@ -86,7 +109,10 @@ def get_weekday_name(date: Any, short: bool=False, to_lower: bool=False) -> str:
     return named_wd
 
 def get_week_number(date: Any) -> int:
-    return date.isocalendar()[1]
+    if isinstance(date, str):
+        return parse_date(date[0:10]).isocalendar()[1]
+    else:
+        return date.isocalendar()[1]
     # python 3.9+
     # return parse_date(date).isocalendar().week
 

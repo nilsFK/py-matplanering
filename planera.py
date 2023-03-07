@@ -39,7 +39,7 @@ def make_schedule(args: dict) -> dict:
     return schedule
 
 def make_schedule_table(sch: Schedule) -> list:
-    headers = ['Date', 'Week', 'Day', 'Item', 'Boundaries', 'Method']
+    headers = ['Date', 'Week', 'Day', 'Item', 'Boundaries', 'Method', 'Quota']
     days = sch.get_days()
     table = []
     for date in days:
@@ -57,6 +57,18 @@ def make_schedule_table(sch: Schedule) -> list:
                 printable_boundaries.append(type(boundary).__name__)
             row2.append(", ".join(printable_boundaries))
             row2.append(sch_event.get_metadata('method'))
+            quota_str = ''
+            for quota in sch.get_quotas(sch_event.get_id()):
+                quota_str += "cap({min},{max}) ({time_unit}): used={used}/{quota}|".format(**{
+                    'min': quota['min'],
+                    'max': quota['max'],
+                    'time_unit': quota['time_unit'][:3],
+                    'left': quota['quota']-quota['used'],
+                    'used': quota['used'],
+                    'quota': quota['max']-quota['min']+1
+                })
+            quota_str = quota_str.strip("|")
+            row2.append(quota_str)
             table.append(row2)
     return table, headers
 

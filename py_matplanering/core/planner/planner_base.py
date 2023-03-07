@@ -24,7 +24,7 @@ class PlannerBase(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def plan_resolve_conflict(self, conflicting_events: list) -> Any:
+    def plan_resolve_conflict(self, schedule: Schedule, date: str, conflicting_events: list) -> Any:
         """ if one day contains multiple events
             a conflict will surface. such conflicts needs to
             be resolved within this method.

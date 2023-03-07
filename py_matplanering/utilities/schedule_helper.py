@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+    Helper methods specifically related to schedules (Schedule) and schedule events (ScheduleEvent).
+"""
+from __future__ import annotations
+
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.schedule.schedule import Schedule
 
@@ -54,3 +59,12 @@ def filter_boundaries(boundaries: dict, apply_filters: dict={}) -> dict:
             if boundary_obj.get_boundary_class() == apply_filters['boundary_class']:
                 filtered_boundaries[boundary_key] = boundary_obj
     return filtered_boundaries
+
+def filter_events_by_quota(sch: Schedule, date: str, sch_events: list) -> list:
+    filtered_sch_events = []
+    for event in sch_events:
+        ok, *_ = sch.validate_quota(date, event.get_id())
+        if ok:
+            filtered_sch_events.append(event)
+    return filtered_sch_events
+

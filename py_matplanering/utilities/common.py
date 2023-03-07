@@ -3,7 +3,10 @@
 """
 common.py is common low-level functionality
 and should not import anything except for
-built in packages.
+built in packages. It should contain
+reusable functions, types and similar which
+does not heavily depend on implementation
+details of the software.
 """
 import ntpath
 import codecs

@@ -14,7 +14,7 @@ class ScheduleManager:
     when manipulating events; such as adding the event to one
     schedule and simultaneously removing it from all other schedules
     to make sure that the event is unique within the domain of the
-    managed schedules (as opposed to globally unique).
+    managed schedules, in contrast to being globally unique.
     One and only one schedule can be set to master which combined
     with tracking events will add events to master and remove from
     minions. Master schedule is not mandatory, all schedules could

@@ -17,16 +17,15 @@ class PlannerFoodMenu(PlannerBase):
         schedule = schedule_helper.make_schedule(sch_options)
         return schedule
 
-    def plan_resolve_conflict(self, date: str, conflicting_events: list) -> Any:
-        for event in conflicting_events:
+    def plan_resolve_conflict(self, schedule: Schedule, date: str, conflicting_events: list) -> Any:
+        ok_events = schedule_helper.filter_events_by_quota(schedule, date, conflicting_events)
+        for event in ok_events:
             print("Conflicting event:", event.get_name(), " on date ", date)
-        r_event = random.choice(conflicting_events)
-        print("Selected:", r_event.get_name())
+        r_event = random.choice(ok_events)
         return r_event
 
-    def plan_missing_event(self, date: str, day_obj: dict) -> Any:
+    def plan_missing_event(self, schedule, Schedule, date: str, day_obj: dict) -> Any:
         print("Missing events on date:", date)
         events = self._sch_builder.get_schedule_events()
         r_event = random.choice(events)
-        print("Selected:", r_event.get_name())
         return r_event
