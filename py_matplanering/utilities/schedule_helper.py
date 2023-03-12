@@ -63,7 +63,7 @@ def filter_boundaries(boundaries: dict, apply_filters: dict={}) -> dict:
 def filter_events_by_quota(sch: Schedule, date: str, sch_events: list) -> list:
     filtered_sch_events = []
     for event in sch_events:
-        ok, *_ = sch.validate_quota(date, event.get_id())
+        ok, *_ = sch.validate_quota(event, date)
         if ok:
             filtered_sch_events.append(event)
     return filtered_sch_events

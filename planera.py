@@ -38,7 +38,48 @@ def make_schedule(args: dict) -> dict:
         print("Failed to create schedule due to: %s" % (automator_ctrl.get_build_error('msg')))
     return schedule
 
-def make_schedule_table(sch: Schedule) -> list:
+def make_event_table(sch: Schedule) -> tuple:
+    headers = ['Event', 'Id', 'Planned', 'Dates']
+    table = []
+    days = sch.get_days()
+    event_data = {}
+    for date in days:
+        for sch_event in sch.get_events_by_date(date):
+            if sch_event.get_id() not in event_data:
+                event_data[sch_event.get_id()] = dict(
+                    dates=[],
+                    name=sch_event.get_name(),
+                    occurrences=0
+                )
+            event_data[sch_event.get_id()]['dates'].append(date)
+            event_data[sch_event.get_id()]['occurrences'] += 1
+            # Add boundaries
+            boundaries = sch_event.get_boundaries()
+            printable_boundaries = []
+            for boundary in boundaries:
+                printable_boundaries.append(type(boundary).__name__)
+            event_data[sch_event.get_id()]['printable_boundaries'] = printable_boundaries
+    total_occurrences = 0
+    for event_id in list(event_data):
+        event_row = event_data[event_id]
+        row = []
+        row.append(event_row['name'])
+        row.append(event_id)
+        row.append(event_row['occurrences'])
+        date_str = ''
+        for date in event_row['dates']:
+            date_str += "{date} ({week_day})\n".format(**{
+                'date': date,
+                'week_day': time_helper.get_weekday_name(date, short=True, to_lower=True)
+            })
+        date_str = date_str.strip("\n")
+        row.append(date_str)
+        table.append(row)
+        total_occurrences += event_row['occurrences']
+    table.append(['Total', None, total_occurrences])
+    return table, headers
+
+def make_date_table(sch: Schedule) -> tuple:
     headers = ['Date', 'Week', 'Day', 'Item', 'Boundaries', 'Method', 'Quota']
     days = sch.get_days()
     table = []
@@ -59,10 +100,10 @@ def make_schedule_table(sch: Schedule) -> list:
             row2.append(sch_event.get_metadata('method'))
             quota_str = ''
             for quota in sch.get_quotas(sch_event.get_id()):
-                quota_str += "cap({min},{max}) ({time_unit}): used={used}/{quota}|".format(**{
+                quota_str += "cap({min},{max}) ({time_unit}): used={used}/{quota}\n".format(**{
                     'min': quota['min'],
                     'max': quota['max'],
-                    'time_unit': quota['time_unit'][:3],
+                    'time_unit': quota['time_unit'][:4],
                     'left': quota['quota']-quota['used'],
                     'used': quota['used'],
                     'quota': quota['max']-quota['min']+1
@@ -110,7 +151,10 @@ if __name__ == '__main__':
             raise Exception('Unexpected None returned by schedule.as_dict()')
         Path(config_data['output_path']).write_text(json.dumps(sch_dct))
         # Output in tabulate form
-        table, headers = make_schedule_table(schedule)
-        print("Total planned events:", len(schedule.get_events()))
+        if config_data['group_table_by'] == 'event':
+            table, headers = make_event_table(schedule)
+        elif config_data['group_table_by'] == 'date':
+            table, headers = make_date_table(schedule)
         print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
+        print("Total planned events:", len(schedule.get_events()))
         print("OK!")

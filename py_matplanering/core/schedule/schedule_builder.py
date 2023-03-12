@@ -149,24 +149,12 @@ class ScheduleBuilder:
                 sch_event_dct[event.get_id()]['occurrence'] += 1
                 sch_event_dct[event.get_id()]['dates'].append(date)
 
-    def build_quota_iter_plan(self, sch_event_id: int, quota_plan: dict, valid_dates: list):
-        misc.make_event_quota(quota_plan)
-        self.__sch_manager.get_master_schedule().add_quota(sch_event_id, quota_plan)
-        quota_plan['iter'] = []
-        if quota_plan['time_unit'] == 'month':
-            month_range = time_helper.get_monthly_dates(self.__sch_manager.get_master_schedule().get_startdate(), self.__sch_manager.get_master_schedule().get_enddate())
-            for start_month in month_range:
-                end_month = time_helper.add_months(time_helper.parse_date(start_month), +1)
-                end_month = time_helper.format_date(time_helper.add_days(end_month, -1))
-                dates_in_range = []
-                for date in valid_dates:
-                    if date >= start_month and date <= end_month:
-                        dates_in_range.append(date)
-                quota_plan['iter'].append(dict(
-                    start_month=start_month,
-                    end_month=end_month,
-                    dates=dates_in_range
-                ))
+    def build_quota_iter_plan(self, sch_event_id: int, quota_plan: dict, valid_dates: list) -> list:
+        startdate = self.__sch_manager.get_master_schedule().get_startdate()
+        enddate = self.__sch_manager.get_master_schedule().get_enddate()
+        misc.make_event_quota(startdate, enddate, quota_plan)
+        iter_plans = self.__sch_manager.get_master_schedule().add_quota(sch_event_id, min(valid_dates), max(valid_dates), quota_plan)
+        return iter_plans
 
     def build_indeterminate_boundaries(self, candidates: dict, event_dct: dict):
         date_to_event_mapping = {}
@@ -233,22 +221,15 @@ class ScheduleBuilder:
 
         for event_id in event_dct:
             event_meta_info = event_dct[event_id]
-            iter_plans = []
+            multi_iter_plans = []
             for quota_plan in event_meta_info['quotas']:
-                self.build_quota_iter_plan(event_id, quota_plan, event_meta_info['dates'])
-                iter_plans.append(quota_plan)
-            for iter_plan in iter_plans:
-                for iter_range in iter_plan['iter']:
-                    if len(iter_range['dates']) == 0:
-                        # Nothing to plan
+                iter_plans = self.build_quota_iter_plan(event_id, quota_plan, event_meta_info['dates'])
+                multi_iter_plans.append(iter_plans)
+            for multi_plan in multi_iter_plans:
+                for iter_plan in multi_plan:
+                    if len(iter_plan['dates']) == 0:
                         continue
-                    # Find all days that only this event occurs in.
-                    # In that case, we can freely add a random sample
-                    # of days as allowed by the quota.
-                    # If there are no days that only this event occurs in,
-                    # it has to be handled by the conflict resolver.
-                    event_dates = self.get_event_dates(date_to_event_mapping, iter_range['dates'], event_id)
-                    # If there are such days, select as many as allowed by {quota}.
+                    event_dates = self.get_event_dates(date_to_event_mapping, iter_plan['dates'], event_id)
                     if len(event_dates) > 0:
                         consumer = common.Consumable(event_dates, consumption_quota=iter_plan['quota'])
                         consumed = consumer.consume(callback=lambda consumables: random.sample(consumables, iter_plan['quota']))

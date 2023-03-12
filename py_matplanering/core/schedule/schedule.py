@@ -9,11 +9,11 @@ from py_matplanering.utilities.time_helper import (
     format_datetime
 )
 
-from py_matplanering.utilities import misc, time_helper
+from py_matplanering.utilities import common, misc, time_helper
 
 import copy
 
-from typing import Any
+from typing import Any, Union
 
 # ScheduleEvent needs to be in schedule.py to avoid some import issues.
 class ScheduleEvent:
@@ -69,6 +69,57 @@ class ScheduleEvent:
         return dct
 
 
+class ScheduleQuota:
+    def __init__(self):
+        self.event_quotas = dict()
+
+    def add_quota(self, event_id: int, startdate: str, enddate: str, quota: dict) -> list:
+        event_quota = misc.make_event_quota(startdate, enddate, quota)
+        if event_id not in self.event_quotas:
+            self.event_quotas[event_id] = []
+        self.event_quotas[event_id].extend(event_quota)
+        return event_quota
+
+    def __consume_quota_usage(self, sch_event: ScheduleEvent, dates: list, consume: int, dry_run: bool=False) -> list:
+        if self.event_quotas.get(sch_event.get_id()) is None:
+            # ok, nothing to consume
+            return []
+        if len(dates) > 1:
+            raise NotImplementedError # not handled at this moment
+        ret = []
+        for quota in self.get(sch_event.get_id()):
+            if dry_run:
+                quota = copy.copy(quota)
+            overlaps = set(dates).intersection(quota['dates'])
+            if len(overlaps) > 0:
+                quota['used'] += consume
+                quota['quota'] -= consume
+                quota['quota'] = max(0, quota['quota'])
+            ret.append(quota)
+        return ret
+
+    def consume_quota_usage(self, sch_event: ScheduleEvent, dates: list, consume: int):
+        return self.__consume_quota_usage(sch_event, dates, consume)
+
+    def exists(self, event_id: int) -> bool:
+            return self.event_quotas.get(event_id) is not None
+
+    def get(self, event_id: int=None) -> Union[dict, list]:
+        if event_id is None:
+            return self.event_quotas
+        if self.event_quotas.get(event_id) is None:
+            return []
+        return self.event_quotas[event_id]
+
+    def validate(self, sch_event: ScheduleEvent, dates: list):
+        quotas = self.__consume_quota_usage(sch_event, dates, consume=1, dry_run=True)
+        for quota in quotas:
+            if quota['used'] > quota['max']-quota['min']+1:
+                return (False, 'excessive_quota', dict(
+                    excessive_quota=quota
+                ))
+        return(True, 'ok', None)
+
 class Schedule:
     """
     Schedule is organized by:
@@ -91,7 +142,7 @@ class Schedule:
             self.schedule['days'][date] = { 'events': [] }
         self.sch_options = sch_options
         # { sch_event_id: [ { 'quota': ...} ]}
-        self.event_quotas = {}
+        self.sch_quota = ScheduleQuota()
         # wr = get_week_range(sch_options['startdate'], sch_options['enddate'])
         # self.week_range = wr # Lazy load?
 
@@ -156,50 +207,16 @@ class Schedule:
         day = self.get_day(date)
         return len(day['events']) > 0
 
-    def __consume_quota_usage(self, event_id: int, consume: int):
-        if self.event_quotas.get(event_id):
-            for quota in self.event_quotas[event_id]:
-                quota['used'] += consume
-                quota['quota'] -= consume
-                quota['quota'] = max(0, quota['quota'])
-
-    def __validate_add_event(self, date: str, event_id: int) -> tuple:
+    def __validate_add_event(self, sch_event: ScheduleEvent, date: str) -> tuple:
+        if not isinstance(sch_event, ScheduleEvent):
+            raise Exception('sch_event must be ScheduleEvent, instead got type %s (%s)' % (type(sch_event), sch_event))
         if self.schedule['use_validation'] is False:
             return (True, 'skipped', None)
-        if not isinstance(event_id, int):
-            raise Exception('event_id must be int, instead got type %s (%s)' % (type(event_id), event_id))
-        if self.event_quotas.get(event_id):
-            added_events = self.get_events_by_id(event_id)
-            if len(added_events) > 0:
-                for quota in self.event_quotas[event_id]:
-                    # Check if quota would exceed for sch_event.get_id()
-                    if quota['quota'] == 0:
-                        return (False, 'quota_exceed', dict(
-                            quota=quota,
-                            faulty_event_id=event_id,
-                            excess=quota['quota']+1
-                        ))
-                    if quota['type'] == 'cap':
-                        if quota['time_unit'] == 'week':
-                            # Check if addition of this event would exceed the limit
-                            # Find all events with the same week number as current date
-                            # Check if it would exceed
-                            week_num = time_helper.get_week_number(date)
-                            week_events = self.get_events_by_week_num(week_num) # TODO: cache?
-                            if len(week_events) > quota['quota']+1:
-                                return (False, 'week_quota_exceed', dict(
-                                    quota=quota,
-                                    week_events=week_events,
-                                    excess=len(week_events)-quota['quota']+1
-                                ))
-                        else:
-                            raise Exception('Unhandled validation due to time_unit: %s' % (quota))
-                    else:
-                        raise Exception("Unhandled validation due to type: %s" % (quota))
-        return (True, 'ok', None)
+        ok, msg, data = self.sch_quota.validate(sch_event, [date])
+        return ok, msg, data
 
-    def validate_quota(self, date: str, sch_event_id: int) -> tuple:
-        return self.__validate_add_event(date, sch_event_id)
+    def validate_quota(self, sch_event: ScheduleEvent, date: str) -> tuple:
+        return self.__validate_add_event(sch_event, date)
 
     def add_event(self, dates: list, sch_event: ScheduleEvent):
         """ Adds schedule event to one or more dates. """
@@ -213,10 +230,10 @@ class Schedule:
             if selected_day is None:
                 raise Exception("Attempting to add event to missing schedule date: %s" % (date))
             # Check if it exceeds quota
-            valid, validity_msg, validity_data = self.__validate_add_event(date, sch_event.get_id())
+            valid, validity_msg, validity_data = self.__validate_add_event(sch_event, date)
             if valid:
                 selected_day['events'].append(sch_event)
-                self.__consume_quota_usage(sch_event.get_id(), consume=1)
+                self.sch_quota.consume_quota_usage(sch_event, dates, consume=1)
             else:
                 # Invalid addition not allowed
                 validity_data['excessive_event'] = sch_event.as_dict(short=True)
@@ -235,14 +252,8 @@ class Schedule:
                 tmp_events.append(event)
             self.get_day(date)['events'] = tmp_events
 
-    def add_quota(self, sch_event_id: int, quota: dict):
-        quota_cpy = copy.deepcopy(quota)
-        misc.make_event_quota(quota_cpy)
-        if sch_event_id not in self.event_quotas:
-            self.event_quotas[sch_event_id] = []
-        self.event_quotas[sch_event_id].append(quota_cpy)
+    def add_quota(self, sch_event_id: int, startdate: str, enddate: str, quota: dict) -> list:
+        return self.sch_quota.add_quota(sch_event_id, startdate, enddate, quota)
 
     def get_quotas(self, sch_event_id: int):
-        if sch_event_id not in self.event_quotas:
-            return []
-        return self.event_quotas[sch_event_id]
+        return self.sch_quota.get(sch_event_id)

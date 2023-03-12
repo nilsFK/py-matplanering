@@ -81,31 +81,34 @@ def get_date_range(start_date: str, end_date: str) -> list:
 
 # Gets week range between a date interval
 # get_week_range("2017-01-01", "2017-12-01") would produce
-# [ [2017-01-01], [2017-01-02, 2017-01-03, ..., 2017-01-08], [2017-01-09, ...] ]
-# Starting day is always monday
+# [ ['2017-01-01'], ['2017-01-02', '2017-01-03', ..., '2017-01-08'], ['2017-01-09', ...] ]
 def get_week_range(start_date: str, end_date: str) -> list:
     week_range = []
-    next_date = start_date
+    cur_date = start_date
     week_buffer = []
     prev_date = None
-    while next_date <= end_date:
-        if prev_date and get_week_number(next_date) != get_week_number(prev_date):
+    while cur_date <= end_date:
+        if prev_date and get_week_number(cur_date) != get_week_number(prev_date):
             # new week, clear buffer
             week_range.append(week_buffer)
             week_buffer = []
-        else:
-            # same week
-            week_buffer.append(next_date)
-        next_date = format_date(add_days(parse_date(next_date), +1))
+        week_buffer.append(cur_date)
+        prev_date = cur_date
+        # last action
+        cur_date = format_date(add_days(parse_date(cur_date), +1))
     if len(week_buffer) > 0:
-        # adds remaining buffer to last week range
-        week_range[len(week_range)-1].extend(week_buffer)
+        # adds remaining buffer
+        week_range.append(week_buffer)
     return week_range
 
 def get_weekday_name(date: Any, short: bool=False, to_lower: bool=False) -> str:
+    if isinstance(date, str):
+        date = parse_date(date)
     named_wd = date.strftime('%A')
     if short:
         named_wd = named_wd[:3]
+    if to_lower:
+        return named_wd.casefold()
     return named_wd
 
 def get_week_number(date: Any) -> int:
