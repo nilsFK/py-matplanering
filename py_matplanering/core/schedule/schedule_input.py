@@ -12,15 +12,18 @@ class ScheduleInput:
         self.__converted = False
         self.__require_active = False
 
-    def get_event_data(self, require_active: bool=False) -> list:
+    def get_event_data(self, require_active: bool=False, defaults={}) -> list:
         # Lazy convertion of event data (dict) to schedule events (list of ScheduleEvent)
         if require_active != self.__require_active:
             self.__converted = False
         if self.__converted is False:
             tmp_event_data = []
             for row in self.org_event_data_dct['data']:
+                # skip inactive
                 if require_active and row['active'] == 0:
                     continue
+                if row.get('prio') is None:
+                    row['prio'] = defaults.get('prio')
                 tmp_event_data.append(ScheduleEvent(row))
             self.event_data_lst = tmp_event_data
             del tmp_event_data

@@ -30,7 +30,7 @@ class ScheduleBuilder:
         * Minion schedule, which is used to create candidates that are converted
             into actual events within the Master schedule.
     ScheduleBuilder is also able to parse boundaries (Boundary) and planners (Planner).
-    An example of a flow of building could look like:
+    An example of a flow of building could look like this:
     sb = ScheduleBuilder()
     sb.set_planner(<planner>)
     schedule = Schedule(...)
@@ -98,7 +98,7 @@ class ScheduleBuilder:
     def build_candidates(self, boundaries: dict, match_boundary_cb=None):
         if self.__build_options['build_candidates'] is False:
             raise Exception('Unable to build candidates because marked as not allowed')
-        event_data = self.sch_inp.get_event_data(require_active=True)
+        event_data = self.sch_inp.get_event_data(require_active=True, defaults=self.__sch_manager.get_master_schedule().get_options('defaults'))
         all_dates = self.get_candidates(as_list=True, as_sorted=True)
         final_rule_set = schedule_helper.convert_rule_set(self.sch_inp, boundaries)
         # Narrow down matching event <-> date by applying date intersection by each boundary
@@ -242,10 +242,12 @@ class ScheduleBuilder:
                         raise NotImplementedError # TODO: handle
         planned_days = []
         for date_list, sch_event in schedule_plan:
-            sch_event = self.__planner.plan_single_event(date_list, sch_event)
-            sch_event.set_metadata('method', 'indeterminate')
-            self.__sch_manager.add_master_event(date_list, sch_event, remove_from_minions=True)
-            planned_days.extend(date_list)
+            ok_events = schedule_helper.filter_events_by_quota(self.__sch_manager.get_master_schedule(), date_list, [sch_event])
+            if len(ok_events) > 0:
+                sch_event = self.__planner.plan_single_event(date_list, sch_event)
+                sch_event.add_metadata('method', 'indeterminate')
+                self.__sch_manager.add_master_event(date_list, sch_event, remove_from_minions=True)
+                planned_days.extend(date_list)
         planned_days = list(set(planned_days))
         self.__build_status = 'indeterminates_planned'
 
@@ -262,33 +264,32 @@ class ScheduleBuilder:
             if len(day_obj['events']) == 1:
                 method = 'determinate_single'
                 # print("Planning single candidate event")
-                selected_event = self.__planner.plan_single_event(next_date, day_obj['events'][0])
+                ok_events = schedule_helper.filter_events_by_quota(self.__sch_manager.get_master_schedule(), next_date, day_obj['events'])
+                if len(ok_events) > 0:
+                    selected_event = self.__planner.plan_single_event(next_date, ok_events[0])
             if selected_event:
                 if not isinstance(selected_event, ScheduleEvent):
                     raise Exception('Expected event selected by planner to be instance of ScheduleEvent, instead got: %s' % (selected_event))
-                selected_event.set_metadata('method', method)
+                selected_event.add_metadata('method', method)
                 self.__sch_manager.add_master_event([next_date], selected_event, remove_from_minions=False)
         self.__build_status = 'plan_ok'
 
     def plan_resolve_conflicts(self, candidates):
-        # In previous phases we determined indeterminate and determinate candidates
-        # and planned. However, conflicts were ignored and is instead handled within
+        # In previous phases we identified indeterminate and determinate candidates
+        # and planned. However, conflicts were ignored and are instead handled within
         # this planner method.
         method = 'resolve_conflict'
         for next_date in sorted(list(candidates)):
             day_obj = candidates[next_date]
             selected_event = None
             if len(day_obj['events']) > 1:
-                # TODO:
-                # The responsibility of resolving conflict is always with the planner.
-                # However, the planner may not return an event that has exceeded.
-                # Make sure that it's not possible.
-                print("Select from:", day_obj['events'])
-                selected_event = self.__planner.plan_resolve_conflict(self.__sch_manager.get_master_schedule(), next_date, day_obj['events'])
+                ok_events = schedule_helper.filter_events_by_quota(self.__sch_manager.get_master_schedule(), next_date, day_obj['events'])
+                if len(ok_events) > 0:
+                    selected_event = self.__planner.plan_resolve_conflict(self.__sch_manager.get_master_schedule(), next_date, ok_events)
             if selected_event:
                 if not isinstance(selected_event, ScheduleEvent):
                     raise Exception('Expected event selected by planner to be instance of ScheduleEvent, instead got: %s' % (selected_event))
-                selected_event.set_metadata('method', 'conflict_resolution')
+                selected_event.add_metadata('method', 'conflict_resolution')
                 self.__sch_manager.add_master_event([next_date], selected_event, remove_from_minions=False)
         self.__build_status = 'plan_ok'
 

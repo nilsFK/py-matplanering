@@ -19,8 +19,11 @@ from tabulate import tabulate
 def make_schedule(args: dict) -> dict:
     raw_event_data = args['event_data']
     raw_rule_set = args['rule_set']
-    automator_ctrl = AutomatorController(args['startdate'], args['enddate'], dict(
-        include_props=['id', 'name']
+    automator_ctrl = AutomatorController(args['startdate'], args['enddate'], sch_options=dict(
+        include_props=['id', 'name'],
+        defaults=dict(
+            prio=5000
+        )
     ))
     planner_name = args['planner']
     if '_' not in planner_name: # assume camel case
@@ -97,7 +100,13 @@ def make_date_table(sch: Schedule) -> tuple:
             for boundary in boundaries:
                 printable_boundaries.append(type(boundary).__name__)
             row2.append(", ".join(printable_boundaries))
-            row2.append(sch_event.get_metadata('method'))
+            method = sch_event.get_metadata('method')
+            method_str = ''
+            for item in method:
+                method_str += "{item}\n".format(**{
+                    'item': item
+                })
+            row2.append(method_str)
             quota_str = ''
             for quota in sch.get_quotas(sch_event.get_id()):
                 quota_str += "cap({min},{max}) ({time_unit}): used={used}/{quota}\n".format(**{
@@ -151,10 +160,15 @@ if __name__ == '__main__':
             raise Exception('Unexpected None returned by schedule.as_dict()')
         Path(config_data['output_path']).write_text(json.dumps(sch_dct))
         # Output in tabulate form
-        if config_data['group_table_by'] == 'event':
-            table, headers = make_event_table(schedule)
-        elif config_data['group_table_by'] == 'date':
-            table, headers = make_date_table(schedule)
-        print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
+        if config_data.get('group_table_by'):
+            table, headers = None, None
+            if config_data['group_table_by'] == 'event':
+                table, headers = make_event_table(schedule)
+            elif config_data['group_table_by'] == 'date':
+                table, headers = make_date_table(schedule)
+            else:
+                raise Exception('Unknown group_table_by: %s (select from: %s)' % (config_data['group_table_by'], ['event', 'date']))
+            if table and headers:
+                print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
         print("Total planned events:", len(schedule.get_events()))
         print("OK!")

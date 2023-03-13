@@ -10,6 +10,8 @@ from py_matplanering.core.schedule.schedule import Schedule
 
 from py_matplanering.utilities import (common, loader)
 
+from typing import Callable
+
 def make_schedule(sch_options: dict):
     return Schedule(sch_options)
 
@@ -55,7 +57,7 @@ def filter_boundaries(boundaries: dict, apply_filters: dict={}) -> dict:
     for boundary_key in list(boundaries):
         boundary_obj = boundaries[boundary_key]
         if apply_filters.get('boundary_class'):
-            print("boundary class of %s is %s" % (boundary_obj, boundary_obj.get_boundary_class()))
+            # print("boundary class of %s is %s" % (boundary_obj, boundary_obj.get_boundary_class()))
             if boundary_obj.get_boundary_class() == apply_filters['boundary_class']:
                 filtered_boundaries[boundary_key] = boundary_obj
     return filtered_boundaries
@@ -68,3 +70,10 @@ def filter_events_by_quota(sch: Schedule, date: str, sch_events: list) -> list:
             filtered_sch_events.append(event)
     return filtered_sch_events
 
+def filter_events(sch: Schedule, date: str, sch_events: list, condition: Callable[[ScheduleEvent], bool]) -> list:
+    filtered_sch_events = []
+    for event in sch_events:
+        ok = condition(event)
+        if ok:
+            filtered_sch_events.append(event)
+    return filtered_sch_events

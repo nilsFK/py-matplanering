@@ -182,7 +182,8 @@
             "enddate": "9999-12-31",
             "active": 1,
             "free_text": null,
-            "rules": ["christmas"]
+            "rules": ["christmas"],
+            "prio": 9999
         }
     ]
 }

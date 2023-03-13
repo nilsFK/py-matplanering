@@ -39,7 +39,6 @@ def make_event_quota(startdate: str, enddate: str, quota_template: dict) -> list
             result.append(new_quota)
     elif base_quota['time_unit'] == 'week':
         week_range = time_helper.get_week_range(startdate, enddate)
-        print(week_range)
         for week_dates in week_range:
             new_quota = copy.copy(base_quota)
             new_quota['dates'] = week_dates

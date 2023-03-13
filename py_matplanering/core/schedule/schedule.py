@@ -48,8 +48,10 @@ class ScheduleEvent:
     def get_boundaries(self) -> list:
         return self.__boundaries
 
-    def set_metadata(self, key: str, value: Any):
-        self.__meta[key] = value
+    def add_metadata(self, key: str, value: Any):
+        if key not in self.__meta:
+            self.__meta[key] = set()
+        self.__meta[key].add(value)
 
     def get_metadata(self, key: str=None) -> Any:
         if key is None:
@@ -62,11 +64,14 @@ class ScheduleEvent:
             showlen = 3
             if len(dct['candidates']) > (showlen*2):
                 # TODO: check if candidates is sequential
-                partial1 = dct['candidates'][0:3]
-                partial2 = dct['candidates'][-3:]
+                partial1 = dct['candidates'][0:showlen]
+                partial2 = dct['candidates'][-showlen:]
                 interm = ["[...]"]
                 dct['candidates'] = partial1 + interm + partial2
         return dct
+
+    def get_prio(self) -> int:
+        return self.__event['prio']
 
 
 class ScheduleQuota:
@@ -135,7 +140,8 @@ class Schedule:
             startdate=sch_options['startdate'],
             enddate=sch_options['enddate'],
             days={},
-            use_validation=bool(sch_options.get('use_validation', True))
+            use_validation=bool(sch_options.get('use_validation', True)),
+            defaults=sch_options.get('defaults', {})
         )
         dr = get_date_range(sch_options['startdate'], sch_options['enddate'])
         for date in dr:
@@ -220,7 +226,7 @@ class Schedule:
 
     def add_event(self, dates: list, sch_event: ScheduleEvent):
         """ Adds schedule event to one or more dates. """
-        print("Add event to dates:", dates)
+        # print("Add event to dates:", dates)
         if not isinstance(sch_event, ScheduleEvent):
             raise Exception('sch_event must be instance of ScheduleEvent, instead got: %s of type %s' % (repr(sch_event), type(sch_event)))
         if not isinstance(dates, list):
@@ -257,3 +263,9 @@ class Schedule:
 
     def get_quotas(self, sch_event_id: int):
         return self.sch_quota.get(sch_event_id)
+
+    def get_options(self, prop: str=None) -> Any:
+        if prop:
+            return self.sch_options[prop]
+        else:
+            return self.sch_options
