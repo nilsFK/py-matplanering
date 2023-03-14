@@ -141,7 +141,7 @@ class Schedule:
             enddate=sch_options['enddate'],
             days={},
             use_validation=bool(sch_options.get('use_validation', True)),
-            defaults=sch_options.get('defaults', {})
+            event_defaults=sch_options.get('event_defaults', {})
         )
         dr = get_date_range(sch_options['startdate'], sch_options['enddate'])
         for date in dr:

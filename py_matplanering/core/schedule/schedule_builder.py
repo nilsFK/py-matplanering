@@ -98,7 +98,7 @@ class ScheduleBuilder:
     def build_candidates(self, boundaries: dict, match_boundary_cb=None):
         if self.__build_options['build_candidates'] is False:
             raise Exception('Unable to build candidates because marked as not allowed')
-        event_data = self.sch_inp.get_event_data(require_active=True, defaults=self.__sch_manager.get_master_schedule().get_options('defaults'))
+        event_data = self.sch_inp.get_event_data(require_active=True, event_defaults=self.__sch_manager.get_master_schedule().get_options('event_defaults'))
         all_dates = self.get_candidates(as_list=True, as_sorted=True)
         final_rule_set = schedule_helper.convert_rule_set(self.sch_inp, boundaries)
         # Narrow down matching event <-> date by applying date intersection by each boundary
@@ -279,7 +279,17 @@ class ScheduleBuilder:
         # and planned. However, conflicts were ignored and are instead handled within
         # this planner method.
         method = 'resolve_conflict'
-        for next_date in sorted(list(candidates)):
+        if self.__sch_manager.get_master_schedule().get_options('iter_method') == 'sorted' or \
+            self.__sch_manager.get_master_schedule().get_options('iter_method') == 'standard':
+            iter_list = sorted(list(candidates))
+        elif self.__sch_manager.get_master_schedule().get_options('iter_method') == 'random':
+            iter_list = list(candidates)
+            random.shuffle(iter_list)
+        else:
+            raise Exception('Unknown iteration method: %s. Select from: sorted, random' % (
+                self.__sch_manager.get_master_schedule().get_options('iter_method')
+            ))
+        for next_date in iter_list:
             day_obj = candidates[next_date]
             selected_event = None
             if len(day_obj['events']) > 1:

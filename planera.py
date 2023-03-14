@@ -21,9 +21,10 @@ def make_schedule(args: dict) -> dict:
     raw_rule_set = args['rule_set']
     automator_ctrl = AutomatorController(args['startdate'], args['enddate'], sch_options=dict(
         include_props=['id', 'name'],
-        defaults=dict(
+        event_defaults=dict(
             prio=5000
-        )
+        ),
+        iter_method='standard'
     ))
     planner_name = args['planner']
     if '_' not in planner_name: # assume camel case
