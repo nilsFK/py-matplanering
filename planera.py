@@ -13,6 +13,7 @@ from py_matplanering.core.planner.planner_randomizer import PlannerRandomizer
 from py_matplanering.core.planner.planner_food_menu import PlannerFoodMenu
 from py_matplanering.core.schedule.schedule import Schedule
 from py_matplanering.utilities import loader
+from py_matplanering.utilities.logger import Logger, LoggerLevel
 
 from tabulate import tabulate
 
@@ -133,7 +134,14 @@ if __name__ == '__main__':
 
     config_data = readConfig(args.config_path, 'Config')
 
+    global_config_data = readConfig('config/global_config.ini', 'Global')
+    logger_level = global_config_data['logger_level']
+    max_verbosity = LoggerLevel[logger_level]
+    if global_config_data['logger'] == 'on':
+        Logger.activate()
+    Logger.log('initializing', verbosity=LoggerLevel.INFO)
     # Get event data
+    Logger.log('fetch event data', verbosity=LoggerLevel.INFO)
     event_data_str = Path(config_data['event_data_path']).read_text()
     if len(event_data_str) == 0:
         raise Exception("event data source file is empty. Expected: JSON formatted data")
@@ -141,13 +149,14 @@ if __name__ == '__main__':
     print("Event data:", event_data_dct)
 
     # Get rule set
+    Logger.log('fetch rule set data', verbosity=LoggerLevel.INFO)
     rule_set_str = Path(config_data['rule_set_path']).read_text()
     if len(rule_set_str) == 0:
         raise Exception("rule set source file is empty. Expected: JSON formatted data")
     rule_set_dct = json.loads(rule_set_str)
-    print("Rule set:", rule_set_dct)
 
     # Create schedule with input arguments
+    Logger.log('Make schedule', verbosity=LoggerLevel.INFO)
     schedule = make_schedule(dict(
         event_data=event_data_dct,
         rule_set=rule_set_dct,
@@ -173,3 +182,4 @@ if __name__ == '__main__':
                 print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
         print("Total planned events:", len(schedule.get_events()))
         print("OK!")
+    Logger.print(max_verbosity=max_verbosity)

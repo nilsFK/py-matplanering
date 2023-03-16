@@ -1,0 +1,3 @@
+[Global]
+logger = on
+logger_level = INFO

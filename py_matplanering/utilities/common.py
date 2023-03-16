@@ -29,16 +29,12 @@ def as_obj(to_obj: dict):
 def as_dict(from_obj):
     return from_obj.__dict__
 
-def singleton(cls):
-    obj = cls()
-    # Always return the same object
-    cls.__new__ = staticmethod(lambda cls: obj)
-    # Disable __init__
-    try:
-        del cls.__init__
-    except AttributeError:
-        pass
-    return cls
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 def path_leaf(path):
     head, tail = ntpath.split(path)
