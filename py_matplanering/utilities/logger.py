@@ -68,4 +68,10 @@ class Logger(metaclass=common.Singleton):
             raise NotImplementedError
         for entry in logger__log:
             if max_verbosity is None or entry['verbosity'].value <= max_verbosity.value:
-                print("%s:%s (%s): %s" % (entry['filename'], entry['method'], entry['time'], entry['msg']))
+                print("%s:%s (%s): %s - %s" % (
+                    entry['filename'],
+                    entry['method'],
+                    entry['time'],
+                    entry['verbosity'].name,
+                    entry['msg']
+                ))

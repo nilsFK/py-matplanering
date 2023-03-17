@@ -63,6 +63,7 @@ class ScheduleBuilder:
         self.__planner.set_schedule_builder(self)
 
     def set_schedule(self, schedule: Schedule):
+        Logger.log('Setting schedule to: %s' % (schedule), verbosity=LoggerLevel.INFO)
         if schedule is None:
             raise Exception('Schedule is not allowed to be null')
         if self.__sch_manager.has_master_schedule():
@@ -71,12 +72,14 @@ class ScheduleBuilder:
         self.__sch_manager.spawn_minion_schedule('candidates')
 
     def set_build_options(self, build_options: dict):
+        Logger.log('Setting build options to: %s' % (build_options), verbosity=LoggerLevel.DEBUG)
         self.__build_options.update(build_options)
 
     def get_build_options(self) -> dict:
         return self.__build_options
 
     def load_boundaries(self) -> dict:
+        Logger.log('Loading boundaries', verbosity=LoggerLevel.DEBUG)
         return schedule_helper.load_boundaries(self.sch_inp)
 
     def set_boundaries(self, boundaries: dict):
@@ -129,6 +132,7 @@ class ScheduleBuilder:
         return self.get_candidates()
 
     def build_event_mapping(self, candidates: list, event_mapping: dict):
+        Logger.log('Building event mapping', verbosity=LoggerLevel.INFO)
         for date in candidates:
             for event in candidates[date]['events']:
                 if event_mapping.get(event.get_id()):
@@ -138,6 +142,7 @@ class ScheduleBuilder:
     def build_event_occurrence(self, candidates: list, sch_event_dct: dict):
         """ How many times has an event occurred within candidates?
         Such information is placed into sch_event_dct. """
+        Logger.log('Building event occurrence from candidates', verbosity=LoggerLevel.INFO)
         for date in candidates:
             occ_dates = []
             for event in candidates[date]['events']:
@@ -152,6 +157,7 @@ class ScheduleBuilder:
                 sch_event_dct[event.get_id()]['dates'].append(date)
 
     def build_quota_iter_plan(self, sch_event_id: int, quota_plan: dict, valid_dates: list) -> list:
+        Logger.log('Building quota iteration plan', verbosity=LoggerLevel.INFO)
         startdate = self.__sch_manager.get_master_schedule().get_startdate()
         enddate = self.__sch_manager.get_master_schedule().get_enddate()
         misc.make_event_quota(startdate, enddate, quota_plan)
@@ -159,6 +165,7 @@ class ScheduleBuilder:
         return iter_plans
 
     def build_indeterminate_boundaries(self, candidates: dict, event_dct: dict):
+        Logger.log('Building indeterminate boundaries', verbosity=LoggerLevel.INFO)
         date_to_event_mapping = {}
         processed_ids = set()
         for date in candidates:
@@ -210,6 +217,7 @@ class ScheduleBuilder:
             3.) The event is not in conflict with other events
                 that also want to be planned on the same date.
             """
+        Logger.log('Planning indeterminate schedule', verbosity=LoggerLevel.INFO)
         schedule_plan = []
         boundaries = schedule_helper.convert_boundaries(self.get_boundaries())
         indeterm_boundaries = schedule_helper.filter_boundaries(boundaries, dict(
@@ -281,6 +289,7 @@ class ScheduleBuilder:
         # In previous phases we identified indeterminate and determinate candidates
         # and planned. However, conflicts were ignored and are instead handled within
         # this planner method.
+        Logger.log('Planning resolve conflicts', verbosity=LoggerLevel.INFO)
         method = 'resolve_conflict'
         if self.__sch_manager.get_master_schedule().get_options('iter_method') == 'sorted' or \
             self.__sch_manager.get_master_schedule().get_options('iter_method') == 'standard':
@@ -317,6 +326,7 @@ class ScheduleBuilder:
         self.__build_options.update(build_options)
 
     def build(self):
+        Logger.log('Running build()-method', verbosity=LoggerLevel.INFO)
         if self.__build_status != 'plan_ok':
             raise Exception('Build must be planned, instead got: %s. Run reset() before build()' % (self.__build_status))
         self.__build_status = 'build_ok'
@@ -328,6 +338,7 @@ class ScheduleBuilder:
         self.sch_inp = sch_inp
 
     def extract_schedule(self):
+        Logger.log('Extracting schedule', verbosity=LoggerLevel.INFO)
         if self.__build_status != 'build_ok':
             raise Exception('Attempting to extract schedule from builder with no run state. Call build() before extraction of schedule.')
         return self.__sch_manager.get_master_schedule()

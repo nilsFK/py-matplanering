@@ -164,22 +164,25 @@ if __name__ == '__main__':
         enddate=config_data['enddate'],
         planner=config_data['planner']
     ))
-    if schedule is not False:
-        sch_dct = schedule.as_dict()
-        if sch_dct is None:
-            raise Exception('Unexpected None returned by schedule.as_dict()')
-        Path(config_data['output_path']).write_text(json.dumps(sch_dct))
-        # Output in tabulate form
-        if config_data.get('group_table_by'):
-            table, headers = None, None
-            if config_data['group_table_by'] == 'event':
-                table, headers = make_event_table(schedule)
-            elif config_data['group_table_by'] == 'date':
-                table, headers = make_date_table(schedule)
-            else:
-                raise Exception('Unknown group_table_by: %s (select from: %s)' % (config_data['group_table_by'], ['event', 'date']))
-            if table and headers:
-                print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
-        print("Total planned events:", len(schedule.get_events()))
-        print("OK!")
-    Logger.print(max_verbosity=max_verbosity)
+    try:
+        if schedule is not False:
+            sch_dct = schedule.as_dict()
+            if sch_dct is None:
+                raise Exception('Unexpected None returned by schedule.as_dict()')
+            Logger.log('Writing schedule to: %s' % (config_data['output_path']), LoggerLevel.INFO)
+            Path(config_data['output_path']).write_text(json.dumps(sch_dct))
+            # Output in tabulate form
+            if config_data.get('group_table_by'):
+                table, headers = None, None
+                if config_data['group_table_by'] == 'event':
+                    table, headers = make_event_table(schedule)
+                elif config_data['group_table_by'] == 'date':
+                    table, headers = make_date_table(schedule)
+                else:
+                    raise Exception('Unknown group_table_by: %s (select from: %s)' % (config_data['group_table_by'], ['event', 'date']))
+                if table and headers:
+                    print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
+            print("Total planned events:", len(schedule.get_events()))
+            print("OK!")
+    finally:
+        Logger.print(max_verbosity=max_verbosity)

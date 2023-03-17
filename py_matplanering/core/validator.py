@@ -4,6 +4,8 @@
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.schedule.schedule import Schedule
 
+from py_matplanering.utilities.logger import Logger, LoggerLevel
+
 from typing import Any
 
 class Validator:
@@ -64,6 +66,7 @@ class Validator:
 
     @staticmethod
     def pre_validate(inp: ScheduleInput) -> tuple:
+        Logger.log('Running input through pre validation method', verbosity=LoggerLevel.DEBUG)
         validation_rule_set = Validator.__validate_rule_set(inp.get_org_rule_set())
         if not validation_rule_set['ok']:
             return (False, validation_rule_set['data'], validation_rule_set['msg'])
@@ -74,4 +77,5 @@ class Validator:
 
     @staticmethod
     def post_validate(sch: Schedule) -> tuple:
+        Logger.log('Running input through post validation method', verbosity=LoggerLevel.DEBUG)
         return (True, None, None) # nothing validated for now

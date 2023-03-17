@@ -3,11 +3,14 @@
 
 from py_matplanering.core.handler.handler import AbstractHandler
 
+from py_matplanering.utilities.logger import Logger, LoggerLevel
+
 from typing import (Any)
 
 class DeterminateDecideCandidateHandler(AbstractHandler):
     """ Handles building determinate candidates. """
     def handle(self, request: Any) ->  Any:
+        Logger.log('Running handler', verbosity=LoggerLevel.DEBUG)
         sch_builder = request.get_schedule_builder()
         boundaries = sch_builder.load_boundaries()
         sch_builder.set_boundaries(boundaries)
