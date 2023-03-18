@@ -7,6 +7,7 @@ from typing import Union
 
 class ScheduleInput:
     def __init__(self, event_data: dict, rule_set: Union[dict, list]):
+        # Find global rules and insert those into event data
         self.org_event_data_dct = event_data
         if isinstance(rule_set, dict):
             self.org_rule_set_lst = [rule_set]

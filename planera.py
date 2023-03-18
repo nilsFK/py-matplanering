@@ -93,7 +93,14 @@ def make_date_table(sch: Schedule) -> tuple:
         row.append(date)
         row.append(time_helper.get_week_number(time_helper.parse_date(date)))
         row.append(time_helper.get_weekday_name(time_helper.parse_date(date)))
-        for sch_event in sch.get_events_by_date(date):
+        sch_events = sch.get_events_by_date(date)
+        if len(sch_events) == 0:
+            # fill remaining rows with empty strings
+            for x in range(len(headers)-len(row)):
+                row.append('')
+            table.append(row)
+            continue
+        for sch_event in sch_events:
             row2 = copy.copy(row)
             row2.append(sch_event.get_name())
             # Add boundaries
@@ -201,7 +208,7 @@ if __name__ == '__main__':
                     raise Exception('Unknown group_table_by: %s (select from: %s)' % (config_data['group_table_by'], ['event', 'date']))
                 if table and headers:
                     print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
-            print("Total planned events:", len(schedule.get_events()))
+            print("Total planned events: %s / %s" % (len(schedule.get_events()), len(schedule.get_days())))
             print("OK!")
     finally:
         Logger.print(max_verbosity=max_verbosity)

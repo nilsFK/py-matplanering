@@ -35,6 +35,17 @@ class AutomatorController:
 
     def build(self, event_data: dict, rule_set: dict) -> Any:
         self.__built_run = True
+        # Inject global rules into event data.
+        # Find all names of global rules
+        global_rules = set()
+        for rule_data in rule_set:
+            if rule_data['scope'] != 'global':
+                continue
+            for rule_set_data in rule_data['rule_set']:
+                global_rules.add(rule_set_data['name'])
+        for event in event_data['data']:
+            event['rules'].extend(list(global_rules))
+            event['rules'] = list(set(event['rules']))
         inp = ScheduleInput(event_data, rule_set)
         validator = Validator()
         is_valid, validation_rs, validation_msg = validator.pre_validate(inp)
