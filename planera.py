@@ -148,18 +148,37 @@ if __name__ == '__main__':
     event_data_dct = json.loads(event_data_str)
     print("Event data:", event_data_dct)
 
-    # Get rule set
+    # Parse and get file paths
     Logger.log('fetch rule set data', verbosity=LoggerLevel.INFO)
-    rule_set_str = Path(config_data['rule_set_path']).read_text()
-    if len(rule_set_str) == 0:
-        raise Exception("rule set source file is empty. Expected: JSON formatted data")
-    rule_set_dct = json.loads(rule_set_str)
+    paths_str = config_data['rule_set_path']
+    paths = paths_str.split(",")
+    if len(paths) == 1:
+        paths = paths[0].split()
+    tmp_paths = []
+    for path_str in paths:
+        path_str = path_str.strip()
+        for quote in ['"', "'"]:
+            if path_str.startswith(quote):
+                path_str = path_str[1:-1]
+        tmp_paths.append(path_str)
+    paths = tmp_paths
+    del tmp_paths
+
+    # Load files into rule sets
+    rule_sets = []
+    for path in paths:
+        Logger.log('Reading path: %s' % (path), verbosity=LoggerLevel.DEBUG)
+        rule_set_str = Path(path).read_text()
+        if len(rule_set_str) == 0:
+            raise Exception("rule set source file is empty. Expected: JSON formatted data")
+        rule_set_dct = json.loads(rule_set_str)
+        rule_sets.append(rule_set_dct)
 
     # Create schedule with input arguments
     Logger.log('Make schedule', verbosity=LoggerLevel.INFO)
     schedule = make_schedule(dict(
         event_data=event_data_dct,
-        rule_set=rule_set_dct,
+        rule_set=rule_sets,
         startdate=config_data['startdate'],
         enddate=config_data['enddate'],
         planner=config_data['planner']

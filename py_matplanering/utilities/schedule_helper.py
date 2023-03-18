@@ -17,14 +17,20 @@ def make_schedule(sch_options: dict):
 
 def load_boundaries(sch_inp: ScheduleInput) -> dict:
     """ Loads all boundaries as required by the schedule input. """
-    rule_set = sch_inp.get_rule_set()
+    rules = []
+    for rule_set_meta in sch_inp.get_rule_set():
+        for rule_set in rule_set_meta['rule_set']:
+            for rule in rule_set['rules']:
+                rule['scope'] = rule_set_meta['scope']
+                rules.append(rule)
     boundaries = {}
-    for rule_set in rule_set['rule_set']:
-        for rule in rule_set['rules']:
-            if rule['type'] == 'boundary':
-                boundary_module_name = 'boundary_%s' % (rule['boundary'])
-                if boundary_module_name not in boundaries:
-                    boundaries[boundary_module_name] = None
+    for rule in rules:
+        if rule['type'] == 'boundary':
+            boundary_module_name = 'boundary_%s' % (rule['boundary'])
+            if boundary_module_name not in boundaries:
+                boundaries[boundary_module_name] = None
+        else:
+            raise Exception('Unknown rule type provided: %s' % (rule['type']))
     boundary_modules = loader.load_boundaries(list(boundaries))
     for boundary in list(boundaries):
         boundaries[boundary] = boundary_modules[boundary]
@@ -32,15 +38,17 @@ def load_boundaries(sch_inp: ScheduleInput) -> dict:
 
 def convert_rule_set(inp: ScheduleInput, boundaries: dict) -> dict:
     rule_set_rs = {}
-    for rule_set in inp.get_rule_set()['rule_set']:
-        rule_set_rs[rule_set['name']] = {}
-        rule_set_rs[rule_set['name']]['id'] = rule_set['id']
-        rule_set_rs[rule_set['name']]['rules'] = rule_set['rules']
-        for rule in rule_set_rs[rule_set['name']]['rules']:
-            if rule['type'] == 'boundary':
-                rule['boundary_module'] = boundaries['boundary_' + rule['boundary']]
-                cls_name = common.underscore_to_camelcase('boundary_' + rule['boundary'])
-                rule['boundary_cls'] = getattr(rule['boundary_module'], cls_name)
+
+    for rule_set_meta in inp.get_rule_set():
+        for rule_set in rule_set_meta['rule_set']:
+            rule_set_rs[rule_set['name']] = {}
+            rule_set_rs[rule_set['name']]['id'] = rule_set['id']
+            rule_set_rs[rule_set['name']]['rules'] = rule_set['rules']
+            for rule in rule_set_rs[rule_set['name']]['rules']:
+                if rule['type'] == 'boundary':
+                    rule['boundary_module'] = boundaries['boundary_' + rule['boundary']]
+                    cls_name = common.underscore_to_camelcase('boundary_' + rule['boundary'])
+                    rule['boundary_cls'] = getattr(rule['boundary_module'], cls_name)
     return rule_set_rs
 
 def convert_boundaries(boundaries: dict) -> dict:

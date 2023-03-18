@@ -1,5 +1,6 @@
 {
     "name": "Ruleset 1",
+    "scope": "event",
     "rule_set": [
         {
             "name": "weekday_only",

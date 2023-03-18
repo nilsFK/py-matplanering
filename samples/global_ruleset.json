@@ -1,0 +1,17 @@
+{
+    "name": "Global ruleset",
+    "scope": "global",
+    "rule_set": [
+        {
+            "name": "glob__wednesday",
+            "id": 9000,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["wed"]
+                }
+            ]
+        }
+    ]
+}

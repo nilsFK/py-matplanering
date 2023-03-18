@@ -80,7 +80,9 @@ class ScheduleBuilder:
 
     def load_boundaries(self) -> dict:
         Logger.log('Loading boundaries', verbosity=LoggerLevel.DEBUG)
-        return schedule_helper.load_boundaries(self.sch_inp)
+        boundaries = schedule_helper.load_boundaries(self.sch_inp)
+        Logger.log('Loaded boundaries: %s' % (boundaries), verbosity=LoggerLevel.DEBUG)
+        return boundaries
 
     def set_boundaries(self, boundaries: dict):
         self.__boundaries = boundaries
@@ -106,6 +108,7 @@ class ScheduleBuilder:
         event_data = self.sch_inp.get_event_data(require_active=True, event_defaults=self.__sch_manager.get_master_schedule().get_options('event_defaults'))
         all_dates = self.get_candidates(as_list=True, as_sorted=True)
         final_rule_set = schedule_helper.convert_rule_set(self.sch_inp, boundaries)
+        Logger.log('Converted final rule set into: %s' % (final_rule_set), LoggerLevel.INFO)
         # Narrow down matching event <-> date by applying date intersection by each boundary
         for event in event_data:
             matching_dates = set(all_dates)
@@ -132,6 +135,7 @@ class ScheduleBuilder:
         return self.get_candidates()
 
     def build_event_mapping(self, candidates: list, event_mapping: dict):
+        """ Maps event id -> event (from candidates) into event_mapping """
         Logger.log('Building event mapping', verbosity=LoggerLevel.INFO)
         for date in candidates:
             for event in candidates[date]['events']:

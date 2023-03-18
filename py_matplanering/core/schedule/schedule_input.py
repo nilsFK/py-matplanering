@@ -3,12 +3,16 @@
 
 from py_matplanering.core.schedule.schedule import ScheduleEvent
 
+from typing import Union
+
 class ScheduleInput:
-    def __init__(self, event_data: dict, rule_set: dict):
+    def __init__(self, event_data: dict, rule_set: Union[dict, list]):
         self.org_event_data_dct = event_data
-        self.org_rule_set_dct = rule_set
+        if isinstance(rule_set, dict):
+            self.org_rule_set_lst = [rule_set]
+        else:
+            self.org_rule_set_lst = rule_set
         self.event_data_lst = None
-        self.rule_set_lst = None
         self.__converted = False
         self.__require_active = False
 
@@ -34,8 +38,8 @@ class ScheduleInput:
     def get_org_event_data(self):
         return self.org_event_data_dct
 
-    def get_org_rule_set(self):
-        return self.org_rule_set_dct
+    def get_org_rule_set(self) -> list:
+        return self.org_rule_set_lst
 
-    def get_rule_set(self):
-        return self.org_rule_set_dct
+    def get_rule_set(self) -> list:
+        return self.org_rule_set_lst

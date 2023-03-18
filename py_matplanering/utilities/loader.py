@@ -11,7 +11,6 @@ def __load_module(module_name, module_folder: str):
     if not safe_module_name.startswith("py_matplanering.core.%s" % module_folder):
         safe_module_name.replace(".", "")
         safe_module_name = "%s.%s" % (module_folder, safe_module_name)
-    print("Load module:", safe_module_name)
     safe_module = importlib.import_module("%s" % safe_module_name)
     return safe_module
 
