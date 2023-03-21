@@ -3,6 +3,10 @@
 from abc import (ABCMeta, abstractmethod)
 
 from py_matplanering.core.schedule.schedule import ScheduleEvent
+from py_matplanering.core.context import BoundaryContext
+
+from typing import List
+
 
 class BoundaryBase(metaclass=ABCMeta):
     def set_boundary(self, boundary):
@@ -11,11 +15,15 @@ class BoundaryBase(metaclass=ABCMeta):
     def get_boundary(self):
         return self._boundary
 
-    @abstractmethod
-    def match_event(self, sch_event: ScheduleEvent, dates: list) -> list:
-        """ Match event against boundary and dates.
+    def filter_eligible_dates(self, boundary_context: BoundaryContext) -> List[str]:
+        """ Filter all eligible dates from context.
             Returns all matching dates. """
-        pass
+        return boundary_context.get_dates()
+
+    def filter_eligible_events(self, boundary_context: BoundaryContext) -> List[ScheduleEvent]:
+        """ Filter all eligible events from context.
+            Returns all matching events. """
+        return boundary_context.get_schedule_events()
 
     @abstractmethod
     def get_boundary_class(self) -> str:

@@ -25,6 +25,7 @@ def make_schedule(args: dict) -> dict:
         event_defaults=dict(
             prio=5000
         ),
+        # TODO: select iter_method from config.
         iter_method='standard'
     ))
     planner_name = args['planner']
@@ -191,6 +192,8 @@ if __name__ == '__main__':
         planner=config_data['planner']
     ))
     try:
+        if schedule is False:
+            Logger.log('Schedule is False', LoggerLevel.FATAL)
         if schedule is not False:
             sch_dct = schedule.as_dict()
             if sch_dct is None:
@@ -208,7 +211,8 @@ if __name__ == '__main__':
                     raise Exception('Unknown group_table_by: %s (select from: %s)' % (config_data['group_table_by'], ['event', 'date']))
                 if table and headers:
                     print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
-            print("Total planned events: %s / %s" % (len(schedule.get_events()), len(schedule.get_days())))
             print("OK!")
     finally:
         Logger.print(max_verbosity=max_verbosity)
+    if schedule:
+        print("Total planned events: %s / %s" % (len(schedule.get_events()), len(schedule.get_days())))

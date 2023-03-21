@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from py_matplanering.core.boundary.boundary_base import BoundaryBase
+from py_matplanering.core.schedule.schedule import ScheduleEvent
+from py_matplanering.core.context import BoundaryContext
 from py_matplanering.utilities import time_helper
 
+from typing import List
+
 class BoundaryDate(BoundaryBase):
-    def match_event(self, event: dict, dates: list) -> list:
+    def filter_eligible_dates(self, boundary_context: BoundaryContext) -> List[str]:
         ret_dates = []
         for outer_row in self._boundary['date']:
             for inner_row in outer_row['values']:

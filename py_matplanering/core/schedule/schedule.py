@@ -125,6 +125,7 @@ class ScheduleQuota:
                 ))
         return(True, 'ok', None)
 
+
 class Schedule:
     """
     Schedule is organized by:
@@ -205,6 +206,17 @@ class Schedule:
             else:
                 events.extend(days[date]['events'])
         return events
+
+    def get_grouped_events(self, sch_event_id: int=None) -> dict:
+        rs = {}
+        days = self.get_days()
+        for date in days:
+            if sch_event_id:
+                events = [event for event in days[date]['events'] if event.get_id() == sch_event_id]
+            else:
+                events = days[date]['events']
+            rs[date] = events
+        return rs
 
     def get_events_by_id(self, sch_event_id: int) -> list:
         return self.get_events(sch_event_id)

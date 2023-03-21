@@ -5,6 +5,7 @@ from py_matplanering.core.planner.planner_base import PlannerBase
 from py_matplanering.core.schedule.schedule import Schedule, ScheduleEvent
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.schedule.schedule_manager import ScheduleManager
+from py_matplanering.core.context import BoundaryContext
 
 from py_matplanering.utilities import (
     schedule_helper,
@@ -16,18 +17,18 @@ from py_matplanering.utilities.logger import Logger, LoggerLevel
 
 import copy, random
 
-from typing import Any
+from typing import Any, Union, List
 
 class ScheduleBuilder:
-    """ ScheduleBuilder is designed to aid in the construction
-    of a schedule without going to much in depth with business logic.
+    """ ScheduleBuilder is designed to help in the construction
+    of a Schedule without going too much in depth with business logic.
     Instead, it supports that process by offering an infrastructure of
     building the different parts needed to assemble a finished Schedule.
     The planning is handled outside of this class, but supported classes
     may use ScheduleBuilder to handle integral decisions to build on.
     ScheduleBuilder internally uses ScheduleManager to separate distinct
     classes of schedules:
-        * Master schedule, which is the actual schedule returned by the builder.
+        * Master schedule, which is the actual Schedule returned by the builder.
         * Minion schedule, which is used to create candidates that are converted
             into actual events within the Master schedule.
     ScheduleBuilder is also able to parse boundaries (Boundary) and planners (Planner).
@@ -126,7 +127,8 @@ class ScheduleBuilder:
                         if match_boundary_cb:
                             if not match_boundary_cb(boundary_obj):
                                 continue
-                        date_matches = boundary_obj.match_event(event, all_dates)
+                        boundary_context = BoundaryContext(self.__sch_manager, [event], all_dates)
+                        date_matches = boundary_obj.filter_eligible_dates(boundary_context)
                         matching_dates = matching_dates.intersection(set(date_matches))
             matching_dates = sorted(list(matching_dates))
             event.set_candidates(matching_dates)
@@ -157,6 +159,7 @@ class ScheduleBuilder:
                         name=event.get_name(),
                         dates=[]
                     )
+                # TODO: could be removed? or needed for debug info?
                 sch_event_dct[event.get_id()]['occurrence'] += 1
                 sch_event_dct[event.get_id()]['dates'].append(date)
 
@@ -212,6 +215,19 @@ class ScheduleBuilder:
                     event_dates.append(date)
         return event_dates
 
+    def _filter_plannable_events(self, date_list: Union[str, list], sch_events: Union[ScheduleEvent, list]) -> List[ScheduleEvent]:
+        Logger.log('Filter plannable events from date list: %s and schedule events: %s' % (date_list, sch_events), LoggerLevel.DEBUG)
+        if not isinstance(date_list, list):
+            date_list = [date_list]
+        if not isinstance(sch_events, list):
+            sch_events = [sch_events]
+        filter_functions = [
+            schedule_helper.filter_events_by_distance,
+            schedule_helper.filter_events_by_quota
+        ]
+        ok_events = schedule_helper.run_filter_events_function_chain(self.__sch_manager.get_master_schedule(), date_list, sch_events, filter_functions)
+        return ok_events
+
     def plan_indeterminate_schedule(self, candidates):
         """ Plans schedule by applying indeterminates.
             This planner method will only plan single events
@@ -256,7 +272,7 @@ class ScheduleBuilder:
                         raise NotImplementedError # TODO: handle
         planned_days = []
         for date_list, sch_event in schedule_plan:
-            ok_events = schedule_helper.filter_events_by_quota(self.__sch_manager.get_master_schedule(), date_list, [sch_event])
+            ok_events = self._filter_plannable_events(date_list, sch_event)
             if len(ok_events) > 0:
                 sch_event = self.__planner.plan_single_event(date_list, sch_event)
                 sch_event.add_metadata('method', 'indeterminate')
@@ -268,7 +284,7 @@ class ScheduleBuilder:
     def plan_determinate_schedule(self, candidates):
         # In previous planning phase we created determinate candidates and
         # planned those according to indeterminate rules.
-        # We need to look thru determinate candidates to find any unplanned dates.
+        # We need to look through determinate candidates to find any unplanned dates.
         # Unplanned dates should be sorted out by the planner.
         # At this point, only plan days with one possible event.
         Logger.log('Planning determinate schedule', verbosity=LoggerLevel.INFO)
@@ -278,8 +294,7 @@ class ScheduleBuilder:
             selected_event = None
             if len(day_obj['events']) == 1:
                 method = 'determinate_single'
-                # print("Planning single candidate event")
-                ok_events = schedule_helper.filter_events_by_quota(self.__sch_manager.get_master_schedule(), next_date, day_obj['events'])
+                ok_events = self._filter_plannable_events(next_date, day_obj['events'])
                 if len(ok_events) > 0:
                     selected_event = self.__planner.plan_single_event(next_date, ok_events[0])
             if selected_event:
@@ -310,12 +325,12 @@ class ScheduleBuilder:
             day_obj = candidates[next_date]
             selected_event = None
             if len(day_obj['events']) > 1:
-                ok_events = schedule_helper.filter_events_by_quota(self.__sch_manager.get_master_schedule(), next_date, day_obj['events'])
+                ok_events = self._filter_plannable_events(next_date, day_obj['events'])
                 if len(ok_events) > 0:
                     selected_event = self.__planner.plan_resolve_conflict(self.__sch_manager.get_master_schedule(), next_date, ok_events)
                     Logger.log('Selected id=%s, name=%s' % (selected_event.get_id(), selected_event.get_name()), verbosity=LoggerLevel.INFO)
                 else:
-                    Logger.log('No OK events found')
+                    Logger.log('No OK events found with date %s' % (next_date), LoggerLevel.DEBUG)
             if selected_event:
                 if not isinstance(selected_event, ScheduleEvent):
                     raise Exception('Expected event selected by planner to be instance of ScheduleEvent, instead got: %s' % (selected_event))

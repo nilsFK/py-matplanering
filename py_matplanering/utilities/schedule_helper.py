@@ -7,10 +7,11 @@ from __future__ import annotations
 
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.schedule.schedule import Schedule
+from py_matplanering.core.context import BoundaryContext
 
 from py_matplanering.utilities import (common, loader)
 
-from typing import Callable
+from typing import Callable, List
 
 def make_schedule(sch_options: dict):
     return Schedule(sch_options)
@@ -70,7 +71,7 @@ def filter_boundaries(boundaries: dict, apply_filters: dict={}) -> dict:
                 filtered_boundaries[boundary_key] = boundary_obj
     return filtered_boundaries
 
-def filter_events_by_quota(sch: Schedule, date: str, sch_events: list) -> list:
+def filter_events_by_quota(sch: Schedule, date: str, sch_events: list) -> List[ScheduleEvent]:
     filtered_sch_events = []
     for event in sch_events:
         ok, *_ = sch.validate_quota(event, date)
@@ -78,7 +79,30 @@ def filter_events_by_quota(sch: Schedule, date: str, sch_events: list) -> list:
             filtered_sch_events.append(event)
     return filtered_sch_events
 
-def filter_events(sch: Schedule, date: str, sch_events: list, condition: Callable[[ScheduleEvent], bool]) -> list:
+def filter_events_by_distance(sch: Schedule, date: str, sch_events: list) -> List[ScheduleEvent]:
+    filtered_sch_events = []
+    for sch_event in sch_events:
+        event_ok = True
+        for boundary in sch_event.get_boundaries():
+            if boundary.get_boundary_class() == 'distance':
+                ok_events = boundary.filter_eligible_events(BoundaryContext(sch, [sch_event], [date]))
+                if len(ok_events) == 0:
+                    event_ok = False
+                    break
+        if event_ok:
+            filtered_sch_events.append(sch_event)
+    return filtered_sch_events
+
+def run_filter_events_function_chain(sch: Schedule, dates: list, sch_events: list, functions: list) -> List[ScheduleEvent]:
+    filtered_sch_events = sch_events
+    for date in dates:
+        for fn in functions:
+            filtered_sch_events = fn(sch, date, filtered_sch_events)
+            if len(filtered_sch_events) == 0:
+                return []
+    return filtered_sch_events
+
+def filter_events(sch: Schedule, date: str, sch_events: list, condition: Callable[[ScheduleEvent], bool]) -> List[ScheduleEvent]:
     filtered_sch_events = []
     for event in sch_events:
         ok = condition(event)

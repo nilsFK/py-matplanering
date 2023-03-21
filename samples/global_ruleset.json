@@ -3,13 +3,16 @@
     "scope": "global",
     "rule_set": [
         {
-            "name": "glob__wednesday",
+            "name": "glob__distance",
             "id": 9000,
+            "active": 1,
             "rules": [
                 {
                     "type": "boundary",
-                    "boundary": "period",
-                    "period": ["wed"]
+                    "boundary": "distance",
+                    "distance": [
+                        { "time_unit": "day", "value": 7}
+                    ]
                 }
             ]
         }
