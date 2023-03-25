@@ -71,7 +71,21 @@ def filter_boundaries(boundaries: dict, apply_filters: dict={}) -> dict:
                 filtered_boundaries[boundary_key] = boundary_obj
     return filtered_boundaries
 
-def filter_events_by_quota(sch: Schedule, date: str, sch_events: list) -> List[ScheduleEvent]:
+def filter_events_by_date_period(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
+    filtered_sch_events = []
+    for event in sch_events:
+        event_sdate, event_edate = event.get_startdate(), event.get_enddate()
+        if event_sdate is None or event_edate is None:
+            filtered_sch_events.append(event)
+            continue
+        if date > event_edate:
+            continue
+        if date < event_sdate:
+            continue
+        filtered_sch_events.append(event)
+    return filtered_sch_events
+
+def filter_events_by_quota(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
     filtered_sch_events = []
     for event in sch_events:
         ok, *_ = sch.validate_quota(event, date)
@@ -79,7 +93,7 @@ def filter_events_by_quota(sch: Schedule, date: str, sch_events: list) -> List[S
             filtered_sch_events.append(event)
     return filtered_sch_events
 
-def filter_events_by_distance(sch: Schedule, date: str, sch_events: list) -> List[ScheduleEvent]:
+def filter_events_by_distance(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
     filtered_sch_events = []
     for sch_event in sch_events:
         event_ok = True
@@ -93,7 +107,7 @@ def filter_events_by_distance(sch: Schedule, date: str, sch_events: list) -> Lis
             filtered_sch_events.append(sch_event)
     return filtered_sch_events
 
-def run_filter_events_function_chain(sch: Schedule, dates: list, sch_events: list, functions: list) -> List[ScheduleEvent]:
+def run_filter_events_function_chain(sch: Schedule, dates: list, sch_events: List[ScheduleEvent], functions: list) -> List[ScheduleEvent]:
     filtered_sch_events = sch_events
     for date in dates:
         for filter_fn in functions:

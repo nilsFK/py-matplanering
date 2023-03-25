@@ -218,13 +218,15 @@ class ScheduleBuilder:
                     event_dates.append(date)
         return event_dates
 
-    def _filter_plannable_events(self, date_list: Union[str, list], sch_events: Union[ScheduleEvent, list]) -> List[ScheduleEvent]:
+    def _filter_plannable_events(self, date_list: Union[str, list], sch_events: Union[ScheduleEvent, List[ScheduleEvent]]) -> List[ScheduleEvent]:
         Logger.log('Filter plannable events from date list: %s and schedule events: %s' % (date_list, sch_events), LoggerLevel.DEBUG)
         if not isinstance(date_list, list):
             date_list = [date_list]
         if not isinstance(sch_events, list):
             sch_events = [sch_events]
+
         filter_functions = [
+            schedule_helper.filter_events_by_date_period,
             schedule_helper.filter_events_by_distance,
             schedule_helper.filter_events_by_quota
         ]
