@@ -3,10 +3,19 @@
 
 from py_matplanering.core.schedule.schedule import Schedule
 from py_matplanering.core.schedule.schedule import ScheduleEvent
+from py_matplanering.core.error import BaseError
 
 from typing import Any
 
 import copy
+
+class ScheduleManagerError(BaseError):
+    def __init__(self, message, capture_data = {}):
+        super(ScheduleManagerError, self).__init__(message)
+        self.capture_data = capture_data
+
+    def __str__(self):
+        return self.message
 
 class ScheduleManager:
     """ ScheduleManager is a collection of schedules which
@@ -37,15 +46,15 @@ class ScheduleManager:
 
     def __add_schedule(self, schedule: Schedule, sch_key: str=None, is_master: bool=False):
         if sch_key is None:
-            raise Exception('key must be valid string (None is not a possible value)')
+            raise ScheduleManagerError('key must be valid string (None is not a possible value)')
         if sch_key in self.schedules:
-            raise Exception('sch_key: %s is already defined' % (sch_key))
+            raise ScheduleManagerError('sch_key: %s is already defined' % (sch_key))
         if len(sch_key) == 0:
-            raise Exception('sch_key must be a non zero length string')
+            raise ScheduleManagerError('sch_key must be a non zero length string')
         self.schedules[sch_key] = schedule
         if is_master:
             if self.master:
-                raise Exception('Master is already set')
+                raise ScheduleManagerError('Master is already set')
             if sch_key is None:
                 sch_key = 'master'
             self.master = sch_key
@@ -80,9 +89,9 @@ class ScheduleManager:
 
     def __add_event(self, sch_key: str, date_list: list, sch_event: ScheduleEvent, remove_from_minions: bool=False):
         if len(list(self.schedules)) == 0:
-            raise Exception('No schedules has been added. Add schedules using the add_schedule method')
+            raise ScheduleManagerError('No schedules has been added. Add schedules using the add_schedule method')
         if sch_key not in self.schedules:
-            raise Exception('Unknown sch_key %s provided. choose from: %s' % (sch_key, list(self.schedules)))
+            raise ScheduleManagerError('Unknown sch_key %s provided. choose from: %s' % (sch_key, list(self.schedules)))
         self.schedules[sch_key].add_event(date_list, sch_event)
         if self.master and remove_from_minions:
             for other_sch_key in self.schedules:
@@ -92,9 +101,8 @@ class ScheduleManager:
 
     def add_master_event(self, date_list: list, sch_event: ScheduleEvent, remove_from_minions: bool=False):
         if self.master is None:
-            raise Exception('No master schedule has been specified')
+            raise ScheduleManagerError('No master schedule has been specified')
         self.__add_event(self.master, date_list, sch_event, remove_from_minions)
 
     def add_minion_event(self, sch_key: str, date_list: list, sch_event: ScheduleEvent):
         self.__add_event(sch_key, date_list, sch_event)
-

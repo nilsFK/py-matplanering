@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from py_matplanering.core.boundary.boundary_base import BoundaryBase
+from py_matplanering.core.boundary.boundary_base import BoundaryBase, BoundaryError
 from py_matplanering.core.schedule.schedule import ScheduleEvent
 from py_matplanering.core.context import BoundaryContext
+
 from py_matplanering.utilities import time_helper
 
 from typing import List
@@ -28,7 +29,7 @@ class BoundaryPeriod(BoundaryBase):
                         matching_dates.add(date)
                         continue
                 else:
-                    raise Exception('Unknown boundary named rule provided: %s' % (named_value))
+                    raise BoundaryError('Unknown boundary named rule provided: %s' % (named_value))
         return list(matching_dates)
 
     def get_boundary_class(self) -> str:

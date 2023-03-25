@@ -5,10 +5,19 @@ from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.validator import Validator
 from py_matplanering.core.scheduler import Scheduler
 from py_matplanering.core.planner.planner_base import PlannerBase
+from py_matplanering.core.error import BaseError
 
 from py_matplanering.utilities.logger import Logger, LoggerLevel
 
 from typing import Any
+
+class AutomatorControllerError(BaseError):
+    def __init__(self, message, capture_data = {}):
+        super(AutomatorControllerError, self).__init__(message)
+        self.capture_data = capture_data
+
+    def __str__(self):
+        return self.message
 
 class AutomatorController:
     def __init__(self, startdate: str, enddate: str, sch_options: dict={}):
@@ -24,7 +33,7 @@ class AutomatorController:
 
     def get_build_error(self, col=None) -> Any:
         if not self.__built_run:
-            raise Exception('Attempting to get build error failed. Run build() before retrieving any errors.')
+            raise AutomatorControllerError('Attempting to get build error failed. Run build() before retrieving any errors.')
         if col is None:
             return self.__build_error
         return self.__build_error[col]

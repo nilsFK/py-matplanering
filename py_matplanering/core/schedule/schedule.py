@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # from __future__ import annotations
 
+from py_matplanering.core.error import BaseError
+
 from py_matplanering.utilities.time_helper import (
     parse_date,
     get_date_range,
@@ -15,11 +17,19 @@ import copy, random
 
 from typing import Any, Union, List
 
+class ScheduleError(BaseError):
+    def __init__(self, message, capture_data = {}):
+        super(ScheduleError, self).__init__(message)
+        self.capture_data = capture_data
+
+    def __str__(self):
+        return self.message
+
 # ScheduleEvent needs to be in schedule.py to avoid some import issues.
 class ScheduleEvent:
     def __init__(self, event_dct: dict):
         if not isinstance(event_dct, dict):
-            raise Exception('ScheduleEvent may only be instance of dict, instead got: %s' % type(event_dct))
+            raise ScheduleError('ScheduleEvent may only be instance of dict, instead got: %s' % type(event_dct))
         self.__event = event_dct
         self.__boundaries = []
         self.__meta = {}
@@ -48,7 +58,7 @@ class ScheduleEvent:
     def add_boundary(self, boundary: Any):
         from py_matplanering.core.boundary.boundary_base import BoundaryBase
         if not isinstance(boundary, BoundaryBase):
-            raise Exception('Boundary should be instance of BoundaryBase, instead got: %s of type %s' % (boundary, type(boundary)))
+            raise ScheduleError('Boundary should be instance of BoundaryBase, instead got: %s of type %s' % (boundary, type(boundary)))
         self.__boundaries.append(boundary)
 
     def get_boundaries(self) -> list:
@@ -233,7 +243,7 @@ class Schedule:
 
     def __validate_add_event(self, sch_event: ScheduleEvent, date: str) -> tuple:
         if not isinstance(sch_event, ScheduleEvent):
-            raise Exception('sch_event must be ScheduleEvent, instead got type %s (%s)' % (type(sch_event), sch_event))
+            raise ScheduleError('sch_event must be ScheduleEvent, instead got type %s (%s)' % (type(sch_event), sch_event))
         if self.schedule['use_validation'] is False:
             return (True, 'skipped', None)
         ok, msg, data = self.sch_quota.validate(sch_event, [date])
@@ -246,13 +256,13 @@ class Schedule:
         """ Adds schedule event to one or more dates. """
         # print("Add event to dates:", dates)
         if not isinstance(sch_event, ScheduleEvent):
-            raise Exception('sch_event must be instance of ScheduleEvent, instead got: %s of type %s' % (repr(sch_event), type(sch_event)))
+            raise ScheduleError('sch_event must be instance of ScheduleEvent, instead got: %s of type %s' % (repr(sch_event), type(sch_event)))
         if not isinstance(dates, list):
-            raise Exception('dates must be instance of list, instead got: %s of type %s' % (repr(dates), type(dates)))
+            raise ScheduleError('dates must be instance of list, instead got: %s of type %s' % (repr(dates), type(dates)))
         for date in dates:
             selected_day = self.get_day(date)
             if selected_day is None:
-                raise Exception("Attempting to add event to missing schedule date: %s" % (date))
+                raise ScheduleError("Attempting to add event to missing schedule date: %s" % (date))
             # Check if it exceeds quota
             valid, validity_msg, validity_data = self.__validate_add_event(sch_event, date)
             if valid:
@@ -261,7 +271,7 @@ class Schedule:
             else:
                 # Invalid addition not allowed
                 validity_data['excessive_event'] = sch_event.as_dict(short=True)
-                raise Exception('Invalid event addition due to: %s (details=%s)' % (validity_msg, validity_data))
+                raise ScheduleError('Invalid event addition due to: %s (details=%s)' % (validity_msg, validity_data))
             # TODO: Daily event limit check should be moved to conflict handler
             # if self.sch_options['daily_event_limit']:
             #     if len(selected_day['events']) > self.sch_options['daily_event_limit']:
@@ -320,7 +330,7 @@ class ScheduleIterator:
             random.shuffle(iter_list)
             self.iter_list = iter_list
         else:
-            raise Exception('Unknown iteration method: %s. Select from: sorted, random' % (iter_method))
+            raise ScheduleError('Unknown iteration method: %s. Select from: sorted, random' % (iter_method))
         self.index = 0
         return None
 

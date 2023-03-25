@@ -3,17 +3,26 @@
 
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.schedule.schedule import Schedule
+from py_matplanering.core.error import BaseError
 
 from py_matplanering.utilities.logger import Logger, LoggerLevel
 
 from typing import Any
+
+class ValidatorError(BaseError):
+    def __init__(self, message, capture_data = {}):
+        super(ValidatorError, self).__init__(message)
+        self.capture_data = capture_data
+
+    def __str__(self):
+        return self.message
 
 class Validator:
 
     @staticmethod
     def report_error(err_msg: str, index: int=None, error_container: dict=None, id_: int=None) -> Any:
         if not isinstance(error_container, dict):
-            raise Exception('Expected error_container to be dict, instead got: %s' % (type(error_container)))
+            raise ValidatorError('Expected error_container to be dict, instead got: %s' % (type(error_container)))
         full_err_msg = 'Validation error: %s' % (err_msg)
         if index:
             full_err_msg += ' at index position: %s' % (index)
@@ -43,7 +52,7 @@ class Validator:
                 return Validator.report_error('Multiple instances of events with same id', error_container=rs, id_=row['id'])
             ids.add(row['id'])
         if rs['ok'] and rs['msg']:
-            raise Exception('Validation error: marked as OK but contains error msg. Expected msg=None, instead got: %s' % (rs['msg']))
+            raise ValidatorError('Validation error: marked as OK but contains error msg. Expected msg=None, instead got: %s' % (rs['msg']))
         rs['ok'] = True
         return rs
 
@@ -67,7 +76,7 @@ class Validator:
             if len(row['rules']) == 0:
                 return Validator.report_error('rule_set->rule_set.rules is empty', index=idx, error_container=rs, id_=id_)
         if rs['ok'] and rs['msg']:
-            raise Exception('Validation error: marked as OK but contains msg. Expected msg=None, instead got: %s' % (rs['msg']))
+            raise ValidatorError('Validation error: marked as OK but contains msg. Expected msg=None, instead got: %s' % (rs['msg']))
         rs['ok'] = True
         return rs
 

@@ -4,9 +4,17 @@ from abc import (ABCMeta, abstractmethod)
 
 from py_matplanering.core.schedule.schedule import ScheduleEvent
 from py_matplanering.core.context import BoundaryContext
+from py_matplanering.core.error import BaseError
 
 from typing import List
 
+class BoundaryError(BaseError):
+    def __init__(self, message, capture_data = {}):
+        super(BoundaryError, self).__init__(message)
+        self.capture_data = capture_data
+
+    def __str__(self):
+        return self.message
 
 class BoundaryBase(metaclass=ABCMeta):
     def set_boundary(self, boundary):

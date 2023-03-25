@@ -3,8 +3,17 @@
 
 from py_matplanering.core.schedule.schedule import Schedule, ScheduleEvent
 from py_matplanering.core.schedule.schedule_manager import ScheduleManager
+from py_matplanering.core.error import BaseError
 
 from typing import Any, Union, List
+
+class ContextError(BaseError):
+    def __init__(self, message, capture_data = {}):
+        super(ContextError, self).__init__(message)
+        self.capture_data = capture_data
+
+    def __str__(self):
+        return self.message
 
 class Context:
     """ Context used to pass parameters as objects.
@@ -26,9 +35,9 @@ class BoundaryContext(Context):
     """
     def __init__(self, sch_source: Union[Schedule,ScheduleManager], sch_events: List[ScheduleEvent], dates: List[str]):
         if not isinstance(sch_events, list):
-            raise Exception('Unexpected sch_event is not List[ScheduleEvent]. Instead got: %s' % (sch_events))
+            raise ContextError('Unexpected sch_event is not List[ScheduleEvent]. Instead got: %s' % (sch_events))
         if not isinstance(dates, list):
-            raise Exception('Unexpected dates is not a List[str]. Instead got: ' % (dates))
+            raise ContextError('Unexpected dates is not a List[str]. Instead got: ' % (dates))
         self._set_context(dict(
             sch_source=sch_source,
             sch_events=sch_events,
@@ -38,12 +47,12 @@ class BoundaryContext(Context):
     def extract_schedule_manager(self) -> ScheduleManager:
         if isinstance(self._context['sch_source'], ScheduleManager):
             return self._context['sch_source']
-        raise Exception('Schedule source is not instance of ScheduleManager, instead got: %s' % (self._context['sch_source']))
+        raise ContextError('Schedule source is not instance of ScheduleManager, instead got: %s' % (self._context['sch_source']))
 
     def extract_schedule(self) -> Schedule:
         if isinstance(self._context['sch_source'], Schedule):
             return self._context['sch_source']
-        raise Exception('Schedule source is not instance of Schedule, instead got: %s' % (self._context['sch_source']))
+        raise ContextError('Schedule source is not instance of Schedule, instead got: %s' % (self._context['sch_source']))
 
     def get_schedule_events(self) -> List[ScheduleEvent]:
         return self._context['sch_events']

@@ -3,15 +3,17 @@
 import argparse, json, copy
 from pathlib import Path
 
+from py_matplanering.core.automator_controller import AutomatorController
+from py_matplanering.core.planner.planner_randomizer import PlannerRandomizer
+from py_matplanering.core.planner.planner_food_menu import PlannerFoodMenu
+from py_matplanering.core.schedule.schedule import Schedule
+from py_matplanering.core.error import AppError
+
 from py_matplanering.utilities.common import (
     as_obj, as_dict, underscore_to_camelcase, camelcase_to_underscore
 )
 from py_matplanering.utilities.config import readConfig
 from py_matplanering.utilities import time_helper
-from py_matplanering.core.automator_controller import AutomatorController
-from py_matplanering.core.planner.planner_randomizer import PlannerRandomizer
-from py_matplanering.core.planner.planner_food_menu import PlannerFoodMenu
-from py_matplanering.core.schedule.schedule import Schedule
 from py_matplanering.utilities import loader
 from py_matplanering.utilities.logger import Logger, LoggerLevel
 
@@ -152,9 +154,9 @@ if __name__ == '__main__':
     Logger.log('fetch event data', verbosity=LoggerLevel.INFO)
     event_data_str = Path(config_data['event_data_path']).read_text()
     if len(event_data_str) == 0:
-        raise Exception("event data source file is empty. Expected: JSON formatted data")
+        raise AppError("event data source file is empty. Expected: JSON formatted data")
     event_data_dct = json.loads(event_data_str)
-    print("Event data:", event_data_dct)
+    # print("Event data:", event_data_dct)
 
     # Parse and get file paths
     Logger.log('fetch rule set data', verbosity=LoggerLevel.INFO)
@@ -178,7 +180,7 @@ if __name__ == '__main__':
         Logger.log('Reading path: %s' % (path), verbosity=LoggerLevel.DEBUG)
         rule_set_str = Path(path).read_text()
         if len(rule_set_str) == 0:
-            raise Exception("rule set source file is empty. Expected: JSON formatted data")
+            raise AppError("rule set source file is empty. Expected: JSON formatted data")
         rule_set_dct = json.loads(rule_set_str)
         rule_sets.append(rule_set_dct)
 
@@ -198,7 +200,7 @@ if __name__ == '__main__':
         if schedule is not False:
             sch_dct = schedule.as_dict()
             if sch_dct is None:
-                raise Exception('Unexpected None returned by schedule.as_dict()')
+                raise AppError('Unexpected None returned by schedule.as_dict()')
             Logger.log('Writing schedule to: %s' % (config_data['output_path']), LoggerLevel.INFO)
             Path(config_data['output_path']).write_text(json.dumps(sch_dct))
             # Output in tabulate form
@@ -209,7 +211,7 @@ if __name__ == '__main__':
                 elif config_data['group_table_by'] == 'date':
                     table, headers = make_date_table(schedule)
                 else:
-                    raise Exception('Unknown group_table_by: %s (select from: %s)' % (config_data['group_table_by'], ['event', 'date']))
+                    raise AppError('Unknown group_table_by: %s (select from: %s)' % (config_data['group_table_by'], ['event', 'date']))
                 if table and headers:
                     print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
             print("OK!")

@@ -6,6 +6,7 @@ from py_matplanering.core.schedule.schedule import Schedule, ScheduleEvent
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.schedule.schedule_manager import ScheduleManager
 from py_matplanering.core.context import BoundaryContext
+from py_matplanering.core.error import BaseError
 
 from py_matplanering.utilities import (
     schedule_helper,
@@ -18,6 +19,14 @@ from py_matplanering.utilities.logger import Logger, LoggerLevel
 import copy, random
 
 from typing import Any, Union, List
+
+class ScheduleBuilderError(BaseError):
+    def __init__(self, message, capture_data = {}):
+        super(ScheduleBuilderError, self).__init__(message)
+        self.capture_data = capture_data
+
+    def __str__(self):
+        return self.message
 
 class ScheduleBuilder:
     """ ScheduleBuilder is designed to help in the construction
@@ -57,18 +66,18 @@ class ScheduleBuilder:
     def set_planner(self, planner: PlannerBase):
         """ May only be called once. """
         if planner is None:
-            raise Exception('Planner must be subclass instance of PlannerBase')
+            raise ScheduleBuilderError('Planner must be subclass instance of PlannerBase')
         if self.__planner is not None:
-            raise Exception('Planner is already set. May only be set once for each instance of ScheduleBuilder')
+            raise ScheduleBuilderError('Planner is already set. May only be set once for each instance of ScheduleBuilder')
         self.__planner = planner
         self.__planner.set_schedule_builder(self)
 
     def set_schedule(self, schedule: Schedule):
         Logger.log('Setting schedule to: %s' % (schedule), verbosity=LoggerLevel.INFO)
         if schedule is None:
-            raise Exception('Schedule is not allowed to be null')
+            raise ScheduleBuilderError('Schedule is not allowed to be null')
         if self.__sch_manager.has_master_schedule():
-            raise Exception('Schedule is already set. May only be set once for each instance of ScheduleBuilder')
+            raise ScheduleBuilderError('Schedule is already set. May only be set once for each instance of ScheduleBuilder')
         self.__sch_manager.add_master_schedule(schedule)
         self.__sch_manager.spawn_minion_schedule('candidates')
 
@@ -108,7 +117,7 @@ class ScheduleBuilder:
     def build_candidates(self, boundaries: dict, match_boundary_cb=None):
         Logger.log(verbosity=LoggerLevel.INFO)
         if self.__build_options['build_candidates'] is False:
-            raise Exception('Unable to build candidates because marked as not allowed')
+            raise ScheduleBuilderError('Unable to build candidates because marked as not allowed')
         event_data = self.sch_inp.get_event_data(require_active=True, event_defaults=self.__sch_manager.get_master_schedule().get_options('event_defaults'))
         all_dates = self.get_candidates(as_list=True, as_sorted=True)
         final_rule_set = schedule_helper.convert_rule_set(self.sch_inp, boundaries)
@@ -304,7 +313,7 @@ class ScheduleBuilder:
                     selected_event = self.__planner.plan_single_event(next_date, ok_events[0])
             if selected_event:
                 if not isinstance(selected_event, ScheduleEvent):
-                    raise Exception('Expected event selected by planner to be instance of ScheduleEvent, instead got: %s' % (selected_event))
+                    raise ScheduleBuilderError('Expected event selected by planner to be instance of ScheduleEvent, instead got: %s' % (selected_event))
                 selected_event.add_metadata('method', method)
                 self.__sch_manager.add_master_event([next_date], selected_event, remove_from_minions=False)
         self.__build_status = 'plan_ok'
@@ -328,7 +337,7 @@ class ScheduleBuilder:
                     Logger.log('No OK events found with date %s' % (next_date), LoggerLevel.DEBUG)
             if selected_event:
                 if not isinstance(selected_event, ScheduleEvent):
-                    raise Exception('Expected event selected by planner to be instance of ScheduleEvent, instead got: %s' % (selected_event))
+                    raise ScheduleBuilderError('Expected event selected by planner to be instance of ScheduleEvent, instead got: %s' % (selected_event))
                 selected_event.add_metadata('method', 'conflict_resolution')
                 self.__sch_manager.add_master_event([next_date], selected_event, remove_from_minions=False)
             else:
@@ -342,7 +351,7 @@ class ScheduleBuilder:
     def build(self):
         Logger.log('Running build()-method', verbosity=LoggerLevel.INFO)
         if self.__build_status != 'plan_ok':
-            raise Exception('Build must be planned, instead got: %s. Run reset() before build()' % (self.__build_status))
+            raise ScheduleBuilderError('Build must be planned, instead got: %s. Run reset() before build()' % (self.__build_status))
         self.__build_status = 'build_ok'
 
     def get_schedule_input(self):
@@ -354,7 +363,7 @@ class ScheduleBuilder:
     def extract_schedule(self):
         Logger.log('Extracting schedule', verbosity=LoggerLevel.INFO)
         if self.__build_status != 'build_ok':
-            raise Exception('Attempting to extract schedule from builder with no run state. Call build() before extraction of schedule.')
+            raise ScheduleBuilderError('Attempting to extract schedule from builder with no run state. Call build() before extraction of schedule.')
         return self.__sch_manager.get_master_schedule()
 
     def get_schedule_events(self):
