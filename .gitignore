@@ -130,5 +130,4 @@ dmypy.json
 
 # Custom ignored repository files
 sample_output.json
-config/config.ini
 config/global_config.ini

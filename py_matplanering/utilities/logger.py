@@ -66,6 +66,8 @@ class Logger(metaclass=common.Singleton):
     def print(format_=None, max_verbosity: LoggerLevel=None):
         if format_:
             raise NotImplementedError
+        if logger__settings['on'] is False:
+            raise Exception('Attempting to print log with deactivated logger.')
         for entry in logger__log:
             if max_verbosity is None or entry['verbosity'].value <= max_verbosity.value:
                 print("%s:%s (%s): %s - %s" % (

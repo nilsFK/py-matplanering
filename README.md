@@ -14,17 +14,17 @@ För ytterligare instruktioner, kör:
 
 > python planera.py -h
 
+Debug
+-----
+
+Skapa en global config-fil.
+
+> sudo cp py-matplanering/config/global_config.ini.template py-matplanering/config/global_config.ini
+
 Exempel
 -------
 > python planera.py samples/sample1/config/sample_config.ini
 
-Projektstatus
--------------
-* Event input - OK
-* PlannerRandomizer implementation - OK
-* PlannerEugene implementation - TODO
-* Schedule input - TODO
-
 Stöd
 ----
-Testas regelbundet för Python 3.5.x+
+Testas regelbundet för Python 3.7.x+

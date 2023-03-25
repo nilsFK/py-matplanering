@@ -144,11 +144,18 @@ if __name__ == '__main__':
 
     config_data = readConfig(args.config_path, 'Config')
 
-    global_config_data = readConfig('config/global_config.ini', 'Global')
-    logger_level = global_config_data['logger_level']
-    max_verbosity = LoggerLevel[logger_level]
-    if global_config_data['logger'] == 'on':
-        Logger.activate()
+    try:
+        global_config_data = readConfig('config/global_config.ini', 'Global')
+        Logger.log('Read global config', LoggerLevel.INFO)
+    except Exception:
+        global_config_data = None
+    max_verbosity = None
+    if global_config_data:
+        logger_level = global_config_data['logger_level']
+        if global_config_data['logger'] == 'on':
+            Logger.activate()
+        max_verbosity = LoggerLevel[logger_level]
+
     Logger.log('initializing', verbosity=LoggerLevel.INFO)
     # Get event data
     Logger.log('fetch event data', verbosity=LoggerLevel.INFO)
@@ -216,6 +223,7 @@ if __name__ == '__main__':
                     print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
             print("OK!")
     finally:
-        Logger.print(max_verbosity=max_verbosity)
+        if Logger.is_activated():
+            Logger.print(max_verbosity=max_verbosity)
     if schedule:
         print("Total planned events: %s / %s" % (len(schedule.get_events()), len(schedule.get_days())))
