@@ -12,12 +12,15 @@ class Validator:
 
     @staticmethod
     def report_error(err_msg: str, index: int=None, error_container: dict=None, id_: int=None) -> Any:
+        if not isinstance(error_container, dict):
+            raise Exception('Expected error_container to be dict, instead got: %s' % (type(error_container)))
         full_err_msg = 'Validation error: %s' % (err_msg)
         if index:
             full_err_msg += ' at index position: %s' % (index)
         if id_:
             full_err_msg += ' (with row id: %s)' % (id_)
         if error_container:
+            error_container['error'] = True
             error_container['msg'] = full_err_msg
             return error_container
         return full_err_msg
@@ -30,11 +33,15 @@ class Validator:
             return Validator.report_error('event_data is empty', error_container=rs)
         if not event_data.get('data'):
             return Validator.report_error('event_data is missing required property "data"', error_container=rs)
-        required_props = ['name']
+        required_props = ['id', 'name']
+        ids = set()
         for idx, row in enumerate(event_data['data']):
             for prop in required_props:
                 if not row.get(prop):
-                    return Validator.report_error('event_data->rule_set.data is missing required property "{prop}"'.format(**{'prop': prop}), index=idx, error_container=rs, id_=row['id'])
+                    return Validator.report_error('event_data->data is missing required property "{prop}"'.format(**{'prop': prop}), index=idx, error_container=rs, id_=row['id'])
+            if row['id'] in ids:
+                return Validator.report_error('Multiple instances of events with same id', error_container=rs, id_=row['id'])
+            ids.add(row['id'])
         if rs['ok'] and rs['msg']:
             raise Exception('Validation error: marked as OK but contains error msg. Expected msg=None, instead got: %s' % (rs['msg']))
         rs['ok'] = True

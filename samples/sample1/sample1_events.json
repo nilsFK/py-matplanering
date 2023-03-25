@@ -84,7 +84,7 @@
         },
         {
             "id": 6,
-            "name": "no rules",
+            "name": "no rules (6)",
             "link": null,
             "difficulty": "easy",
             "type": "hybrid",
@@ -100,7 +100,7 @@
         },
         {
             "id": 7,
-            "name": "no rules",
+            "name": "no rules (7)",
             "link": null,
             "difficulty": null,
             "type": null,
@@ -148,7 +148,7 @@
         },
         {
             "id": 10,
-            "name": "no rules",
+            "name": "no rules (10)",
             "link": null,
             "difficulty": null,
             "type": "pork",
