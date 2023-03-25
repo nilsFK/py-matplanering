@@ -96,8 +96,8 @@ def filter_events_by_distance(sch: Schedule, date: str, sch_events: list) -> Lis
 def run_filter_events_function_chain(sch: Schedule, dates: list, sch_events: list, functions: list) -> List[ScheduleEvent]:
     filtered_sch_events = sch_events
     for date in dates:
-        for fn in functions:
-            filtered_sch_events = fn(sch, date, filtered_sch_events)
+        for filter_fn in functions:
+            filtered_sch_events = filter_fn(sch, date, filtered_sch_events)
             if len(filtered_sch_events) == 0:
                 return []
     return filtered_sch_events

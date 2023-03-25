@@ -28,7 +28,7 @@ class ScheduleBuilder:
     may use ScheduleBuilder to handle integral decisions to build on.
     ScheduleBuilder internally uses ScheduleManager to separate distinct
     classes of schedules:
-        * Master schedule, which is the actual Schedule returned by the builder.
+        * Master schedule, which is the actual produced Schedule returned by the builder.
         * Minion schedule, which is used to create candidates that are converted
             into actual events within the Master schedule.
     ScheduleBuilder is also able to parse boundaries (Boundary) and planners (Planner).
@@ -78,6 +78,9 @@ class ScheduleBuilder:
 
     def get_build_options(self) -> dict:
         return self.__build_options
+
+    def get_schedule_options(self) -> dict:
+        return self.__sch_manager.get_master_schedule().get_options()
 
     def load_boundaries(self) -> dict:
         Logger.log('Loading boundaries', verbosity=LoggerLevel.DEBUG)
@@ -304,23 +307,13 @@ class ScheduleBuilder:
                 self.__sch_manager.add_master_event([next_date], selected_event, remove_from_minions=False)
         self.__build_status = 'plan_ok'
 
-    def plan_resolve_conflicts(self, candidates):
+    def plan_resolve_conflicts(self, candidates: dict, iter_order: List[str]):
         # In previous phases we identified indeterminate and determinate candidates
         # and planned. However, conflicts were ignored and are instead handled within
         # this planner method.
         Logger.log('Planning resolve conflicts', verbosity=LoggerLevel.INFO)
         method = 'resolve_conflict'
-        if self.__sch_manager.get_master_schedule().get_options('iter_method') == 'sorted' or \
-            self.__sch_manager.get_master_schedule().get_options('iter_method') == 'standard':
-            iter_list = sorted(list(candidates))
-        elif self.__sch_manager.get_master_schedule().get_options('iter_method') == 'random':
-            iter_list = list(candidates)
-            random.shuffle(iter_list)
-        else:
-            raise Exception('Unknown iteration method: %s. Select from: sorted, random' % (
-                self.__sch_manager.get_master_schedule().get_options('iter_method')
-            ))
-        for next_date in iter_list:
+        for next_date in iter_order:
             Logger.log('Attempting to resolve conflict with date %s' % (next_date), verbosity=LoggerLevel.INFO)
             day_obj = candidates[next_date]
             selected_event = None

@@ -37,8 +37,8 @@ class Logger(metaclass=common.Singleton):
             raise Exception('Verbosity is None, choose verbosity from LoggerLevel.[%s]' % (", ".join(members)))
         if not logger__settings['on']:
             return False
-        if verbosity.value > 5 or verbosity.value < 0:
-            raise Exception('Verbosity must be an integer between 0-5. Got: %s' % (verbosity))
+        if verbosity.value > 2 or verbosity.value < 0:
+            raise Exception('Verbosity must be an integer from {0,1,2}. Got: %s' % (verbosity))
         frame = inspect.stack()[1]
         module = inspect.getmodule(frame[0])
         curframe = inspect.currentframe()

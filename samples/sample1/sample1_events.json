@@ -3,7 +3,7 @@
     "data": [
         {
             "id": 1,
-            "name": "Kebab with sticky rice",
+            "name": "weekend_only",
             "link": null,
             "difficulty": "easy",
             "type": "beef",
@@ -19,7 +19,7 @@
         },
         {
             "id": 2,
-            "name": "Sushi mix",
+            "name": "quarter_3",
             "link": null,
             "difficulty": "easy",
             "type": "fish",
@@ -35,7 +35,7 @@
         },
         {
             "id": 3,
-            "name": "Hamburger",
+            "name": "max_once_a_month",
             "link": null,
             "difficulty": "medium",
             "type": "beef",
@@ -51,7 +51,7 @@
         },
         {
             "id": 4,
-            "name": "Beef stroganoff",
+            "name": "max_once_a_month|quarter_3",
             "link": null,
             "difficulty": "medium",
             "type": "beef",
@@ -67,7 +67,7 @@
         },
         {
             "id": 5,
-            "name": "vacant",
+            "name": "max_once_a_week",
             "vacant": true,
             "link": null,
             "difficulty": null,
@@ -84,7 +84,7 @@
         },
         {
             "id": 6,
-            "name": "Pizza",
+            "name": "no rules",
             "link": null,
             "difficulty": "easy",
             "type": "hybrid",
@@ -100,7 +100,7 @@
         },
         {
             "id": 7,
-            "name": "[REDACTED]",
+            "name": "no rules",
             "link": null,
             "difficulty": null,
             "type": null,
@@ -116,7 +116,7 @@
         },
         {
             "id": 8,
-            "name": "Carnitas",
+            "name": "weekend_only",
             "link": null,
             "difficulty": "hard",
             "type": "pork",
@@ -132,7 +132,7 @@
         },
         {
             "id": 9,
-            "name": "Lasagna",
+            "name": "weekend_only",
             "link": null,
             "difficulty": "easy",
             "type": "beef",
@@ -148,7 +148,7 @@
         },
         {
             "id": 10,
-            "name": "San Choy Bau",
+            "name": "no rules",
             "link": null,
             "difficulty": null,
             "type": "pork",
@@ -164,7 +164,7 @@
         },
         {
             "id": 11,
-            "name": "Christmas family meal",
+            "name": "christmas",
             "link": null,
             "difficulty": null,
             "type": null,

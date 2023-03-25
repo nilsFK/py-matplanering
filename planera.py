@@ -25,8 +25,7 @@ def make_schedule(args: dict) -> dict:
         event_defaults=dict(
             prio=5000
         ),
-        # TODO: select iter_method from config.
-        iter_method='standard'
+        iter_method=args['iter_method']
     ))
     planner_name = args['planner']
     if '_' not in planner_name: # assume camel case
@@ -86,7 +85,7 @@ def make_event_table(sch: Schedule) -> tuple:
     return table, headers
 
 def make_date_table(sch: Schedule) -> tuple:
-    headers = ['Date', 'Week', 'Day', 'Item', 'Boundaries', 'Method', 'Quota']
+    headers = ['Date', 'Week', 'Day', 'Item', 'Id', 'Boundaries', 'Method', 'Quota']
     days = sch.get_days()
     table = []
     for date in days:
@@ -104,6 +103,7 @@ def make_date_table(sch: Schedule) -> tuple:
         for sch_event in sch_events:
             row2 = copy.copy(row)
             row2.append(sch_event.get_name())
+            row2.append(sch_event.get_id())
             # Add boundaries
             boundaries = sch_event.get_boundaries()
             printable_boundaries = []
@@ -189,7 +189,8 @@ if __name__ == '__main__':
         rule_set=rule_sets,
         startdate=config_data['startdate'],
         enddate=config_data['enddate'],
-        planner=config_data['planner']
+        planner=config_data['planner'],
+        iter_method=config_data['iter_method']
     ))
     try:
         if schedule is False:

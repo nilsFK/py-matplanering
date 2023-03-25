@@ -6,12 +6,11 @@ from py_matplanering.core.schedule.schedule_manager import ScheduleManager
 
 from typing import Any, Union, List
 
-# A context which holds one instance of a Schedule and any
-# data which is related to but not itself contained within Schedule.
-# ScheduleContext can be passed as a parameter and is a working
-# data class. It may be subclassed to provide
-# more specific context.
 class Context:
+""" Context used to pass parameters as objects.
+    Context itself doesn't actually contain any specific context
+    and should be subclassed to provide some sort of context
+    in the constructor. """
     def __init__(self, context: Any):
         self._context = context
 
@@ -22,6 +21,8 @@ class Context:
         self._context = context
 
 class BoundaryContext(Context):
+""" A context which holds one instance of a Schedule or ScheduleManager and any
+    data which is related to but not itself contained within Schedule. """
     def __init__(self, sch_source: Union[Schedule,ScheduleManager], sch_events: List[ScheduleEvent], dates: List[str]):
         if not isinstance(sch_events, list):
             raise Exception('Unexpected sch_event is not List[ScheduleEvent]. Instead got: %s' % (sch_events))

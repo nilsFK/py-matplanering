@@ -11,9 +11,9 @@ from py_matplanering.utilities.time_helper import (
 
 from py_matplanering.utilities import common, misc, time_helper
 
-import copy
+import copy, random
 
-from typing import Any, Union
+from typing import Any, Union, List
 
 # ScheduleEvent needs to be in schedule.py to avoid some import issues.
 class ScheduleEvent:
@@ -281,3 +281,49 @@ class Schedule:
             return self.sch_options[prop]
         else:
             return self.sch_options
+
+
+class ScheduleIterator:
+    """
+        Iterates through a dict representation of a Schedule.
+        The order of iteration depends on the iteration method
+        provided (iter_method) to the constructor. The order of
+        iteration is important to either eliminate repeating patterns
+        or accept that repeating patterns will occur to some degree.
+        The iteration method produces a list of str dates, e.g.:
+
+        items = { '20xx-01-01': { 'events': [ScheduleEvent(...), ...] }, ..., '20xx-12-31': ... }
+        str_date_order = list(ScheduleIterator(items, iter_method='sorted'))
+        str_data_order[0] == '20xx-01-01' # True
+    """
+    def __init__(self, sch_dct: dict, iter_method: str):
+        """
+            Iterator method (iter_method) may be any of:
+                * sorted:   alphabetically sorted order. may cause repeatable patterns
+                            of schedule events.
+                * random:   randomly generated list. prevents repeatable patterns of
+                            schedule events to some degree. should be combined with
+                            certain boundaries to fully eliminate repeatable patterns.
+        """
+        if isinstance(sch_dct, Schedule):
+            sch_dct = sch_dct.as_dict()
+        if iter_method in ['sorted', 'standard']:
+            self.iter_list = sorted(list(sch_dct))
+        elif iter_method == 'random':
+            iter_list = list(sch_dct)
+            random.shuffle(iter_list)
+            self.iter_list = iter_list
+        else:
+            raise Exception('Unknown iteration method: %s. Select from: sorted, random' % (iter_method))
+        self.index = 0
+        return None
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.index+1 > len(self.iter_list):
+            raise StopIteration
+        item = self.iter_list[self.index]
+        self.index += 1
+        return item
