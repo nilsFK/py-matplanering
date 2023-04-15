@@ -29,16 +29,7 @@ def make_schedule(args: dict) -> dict:
         ),
         iter_method=args['iter_method']
     ))
-    planner_name = args['planner']
-    if '_' not in planner_name: # assume camel case
-        planner_name_cc = planner_name
-        planner_name_us = camelcase_to_underscore(planner_name)
-    else: # assume underscore
-        planner_name_us = planner_name
-        planner_name_cc = underscore_to_camelcase(planner_name)
-
-    planner_module = loader.load_planner(planner_name_us)
-    planner = getattr(planner_module, planner_name_cc)()
+    planner = loader.build_planner(args['planner'])
     automator_ctrl.set_planner(planner)
     schedule = automator_ctrl.build(raw_event_data, raw_rule_set)
     if schedule is False:

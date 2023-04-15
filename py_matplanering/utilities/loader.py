@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+loader.py loads core modules so it can be dynamically
+produced. It's also capable of building classes.
+"""
 from __future__ import absolute_import
 from __future__ import unicode_literals
 import importlib
@@ -29,3 +33,15 @@ def load_planners(planners: list) -> dict:
 
 def load_planner(planner: str):
     return load_planners([planner])[planner]
+
+def build_planner(planner_name: str):
+    if '_' not in planner_name: # assume camel case
+        planner_name_cc = planner_name
+        planner_name_us = common.camelcase_to_underscore(planner_name)
+    else: # assume underscore
+        planner_name_us = planner_name
+        planner_name_cc = common.underscore_to_camelcase(planner_name)
+
+    planner_module = load_planner(planner_name_us)
+    planner = getattr(planner_module, planner_name_cc)()
+    return planner
