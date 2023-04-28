@@ -10,11 +10,12 @@ import random
 from typing import Any
 
 class PlannerFoodMenu(PlannerBase):
-    def plan_init(self, sch_options: dict) -> Schedule:
+    def plan_init(self, sch_options: dict, schedule: Schedule=None) -> Schedule:
         # Current version only allows one event each day.
         # TODO: Add multi event support.
-        sch_options['daily_event_limit'] = 1
-        schedule = schedule_helper.make_schedule(sch_options)
+        if schedule is None:
+            sch_options['daily_event_limit'] = 1
+            schedule = schedule_helper.make_schedule(sch_options)
         return schedule
 
     def plan_resolve_conflict(self, schedule: Schedule, date: str, conflicting_events: list) -> Any:

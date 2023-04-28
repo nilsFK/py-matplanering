@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from py_matplanering.core.schedule.schedule import Schedule
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.validator import Validator
 from py_matplanering.core.scheduler import Scheduler
@@ -30,6 +31,7 @@ class AutomatorController:
             daily_event_limit=None
         )
         self.__sch_options.update(sch_options)
+        self.__initial_schedule = None
 
     def get_build_error(self, col=None) -> Any:
         if not self.__built_run:
@@ -42,7 +44,11 @@ class AutomatorController:
         Logger.log('Setting planner to %s' % (planner), LoggerLevel.DEBUG)
         self.__planner = planner
 
-    def build(self, event_data: dict, rule_set: dict) -> Any:
+    def init_schedule(self, sch: Schedule):
+        """ Initial schedule which may already contain events """
+        self.__initial_schedule = sch
+
+    def build(self, event_data: dict, rule_set: list) -> Any:
         self.__built_run = True
         # Inject global rules into event data.
         # Find all names of global rules
@@ -55,7 +61,7 @@ class AutomatorController:
         for event in event_data['data']:
             event['rules'].extend(list(global_rules))
             event['rules'] = list(set(event['rules']))
-        inp = ScheduleInput(event_data, rule_set)
+        inp = ScheduleInput(event_data, rule_set, self.__initial_schedule)
         validator = Validator()
         is_valid, validation_rs, validation_msg = validator.pre_validate(inp)
         if not is_valid:
@@ -67,7 +73,7 @@ class AutomatorController:
             assert self.__build_error['msg'] is not None
             return False
         Logger.log('Create Scheduler', verbosity=LoggerLevel.DEBUG)
-        scheduler = Scheduler(self.__planner, self.__sch_options)
+        scheduler = Scheduler(self.__planner, self.__sch_options, self.__initial_schedule)
         Logger.log('Create Schedule', verbosity=LoggerLevel.DEBUG)
         schedule = scheduler.create_schedule(inp)
 

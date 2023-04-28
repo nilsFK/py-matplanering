@@ -6,15 +6,15 @@
 from __future__ import annotations
 
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
-from py_matplanering.core.schedule.schedule import Schedule
+from py_matplanering.core.schedule.schedule import Schedule, ScheduleEvent
 from py_matplanering.core.context import BoundaryContext
 
 from py_matplanering.utilities import (common, loader)
 
 from typing import Callable, List
 
-def make_schedule(sch_options: dict):
-    return Schedule(sch_options)
+def make_schedule(sch_options: dict, prep_events: dict={}):
+    return Schedule(sch_options, prep_events)
 
 def load_boundaries(sch_inp: ScheduleInput) -> dict:
     """ Loads all boundaries as required by the schedule input. """
@@ -107,11 +107,17 @@ def filter_events_by_distance(sch: Schedule, date: str, sch_events: List[Schedul
             filtered_sch_events.append(sch_event)
     return filtered_sch_events
 
+def run_filter_events_function(sch: Schedule, date: str, sch_events: List[ScheduleEvent], filter_fn: Callable) -> List[ScheduleEvent]:
+    filtered_sch_events = filter_fn(sch, date, sch_events)
+    if not isinstance(filtered_sch_events, list):
+        raise Exception('Applied filter function unexpectedly returned non list: %s' % (filtered_sch_events))
+    return filtered_sch_events
+
 def run_filter_events_function_chain(sch: Schedule, dates: list, sch_events: List[ScheduleEvent], functions: list) -> List[ScheduleEvent]:
     filtered_sch_events = sch_events
     for date in dates:
         for filter_fn in functions:
-            filtered_sch_events = filter_fn(sch, date, filtered_sch_events)
+            filtered_sch_events = run_filter_events_function(sch, date, filtered_sch_events, filter_fn)
             if len(filtered_sch_events) == 0:
                 return []
     return filtered_sch_events
@@ -123,3 +129,95 @@ def filter_events(sch: Schedule, date: str, sch_events: list, condition: Callabl
         if ok:
             filtered_sch_events.append(event)
     return filtered_sch_events
+
+def count_placed_schedule_days(sch: Schedule) -> int:
+    """ Counts how many days in schedule have been "placed", e.g.
+        contains at least one event. """
+    placed_days_counter = 0
+    result = sch.get_grouped_events()
+    for date in result:
+        if len(result[date]) > 0:
+            placed_days_counter += 1
+    return placed_days_counter
+
+def parse_schedule(sch_dct: dict) -> Schedule:
+    """ Converts sch_dct into an instance of Schedule
+        Also parses any related sub instances to Schedule,
+        such as ScheduleEvent.
+    """
+    schedule = make_schedule(sch_dct['options'])
+    for date in schedule.get_days():
+        sch_events_list = sch_dct['days'][date]['events']
+        for event_dct in sch_events_list:
+            sch_event_obj = ScheduleEvent(event_dct)
+            # Events should by default not contain any candidates.
+            sch_event_obj.set_candidates([])
+            schedule.add_event([date], sch_event_obj)
+    return schedule
+
+# TODO: implement if needed
+# def merge_schedules(sch1: Schedule, sch2: Schedule, conflict_schema: dict={}):
+#     """ Merge sch1 and sch2 into a new schedule.
+#         Any duplicate data is overwritten by sch2.
+#         So the ordering of sch1 and sch2 is important.
+#         If there are conflicts in merge which cannot be resolved,
+#         it will be instead be determined from the conflict_schema.
+#         This method is not yet capable of handling
+#         non-consecutive schedules. Consider the following schedule graph
+#         (left to right):
+
+#         |----| (S1)
+#                     |----| (S2)
+
+#         Since there is a gap between end of S1 and start of S2,
+#         a merge would include that gap period, which
+#         is not an expected behavior.
+#     """
+#     # Create a new Schedule instance
+#     new_schedule = Schedule(sch2.get_options())
+
+#     # Resolve any merge conflicts
+#     if sch1.use_validation != sch2.use_validation:
+#         new_schedule.use_validation = conflict_schema['use_validation']
+
+#     # Overwrite some specific props
+#     new_schedule.startdate = min(sch1.startdate, sch2.startdate)
+#     new_schedule.enddate = max(sch1.enddate, sch2.enddate)
+
+#     # Combine the days from the two schedules
+#     # TODO: this is only partially correct.
+#     # 1.) it needs to merge events based on their ids.
+#     # 2.) if sch1.event.id == sch2.event.id we're good.
+#     # 3.) if sch1.event.id != sch2.event.id there is a conflict. Current fix is to prefer sch2.id and overwrite sch1.id.
+#     #       (if only one event allowed per day)
+#     # 4.) ???
+#     # for date in sch1.schedule['days']:
+#     #     if date in sch2.schedule['days']:
+#     #         new_schedule.schedule['days'][date] = {
+#     #             'events': sch1.schedule['days'][date]['events'] + sch2.schedule['days'][date]['events']
+#     #         }
+#     #     else:
+#     #         new_schedule.schedule['days'][date] = sch1.schedule['days'][date]
+#     # for date in sch2.schedule['days']:
+#     #     if date not in sch1.schedule['days']:
+#     #         new_schedule.schedule['days'][date] = sch2.schedule['days'][date]
+#     #
+#     # combine the event defaults from the two schedules
+#     new_schedule.schedule['event_defaults'] = {
+#         **sch1.schedule['event_defaults'],
+#         **sch2.schedule['event_defaults']
+#     }
+#     # combine the quota from the two schedules
+#     # TODO: merge quota by inspecting event_quotas...
+#     #
+#     # new_schedule.sch_quota = sch1.sch_quota + sch2.sch_quota
+#     return new_schedule
+
+#     # self.schedule = dict(
+#     #     built_dt=False,
+#     #     startdate=sch_options['startdate'],
+#     #     enddate=sch_options['enddate'],
+#     #     days={},
+#     #     use_validation=bool(sch_options.get('use_validation', True)),
+#     #     event_defaults=sch_options.get('event_defaults', {})
+#     # )

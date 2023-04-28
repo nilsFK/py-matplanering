@@ -69,10 +69,12 @@ class ScheduleEvent:
             self.__meta[key] = set()
         self.__meta[key].add(value)
 
-    def get_metadata(self, key: str=None) -> Any:
+    def get_metadata(self, key: str=None, default=None) -> Any:
         if key is None:
             return self.__meta
-        return self.__meta[key]
+        if key in self.__meta:
+            return self.__meta[key]
+        return default
 
     def as_dict(self, short: bool=False):
         dct = copy.deepcopy(self.__event)
@@ -148,11 +150,10 @@ class Schedule:
         each Schedule has many days.
         each day has many ScheduleEvent.
     """
-    def __init__(self, sch_options: dict):
+    def __init__(self, sch_options: dict, prep_events: dict={}):
         # self.schedule contains any details that should be
         # visible outside the class via as_dict.
         self.schedule = dict(
-            default=True,
             built_dt=False,
             startdate=sch_options['startdate'],
             enddate=sch_options['enddate'],
@@ -162,7 +163,8 @@ class Schedule:
         )
         dr = get_date_range(sch_options['startdate'], sch_options['enddate'])
         for date in dr:
-            self.schedule['days'][date] = { 'events': [] }
+            # self.schedule['days'][date] = { 'events': [] }
+            self.schedule['days'][date] = { 'events': prep_events.get(date, []) }
         self.sch_options = sch_options
         # { sch_event_id: [ { 'quota': ...} ]}
         self.sch_quota = ScheduleQuota()
@@ -171,6 +173,7 @@ class Schedule:
 
     def as_dict(self) -> dict:
         sch_dct = copy.deepcopy(self.schedule)
+        sch_dct['options'] = self.sch_options
         for day_num in sch_dct['days']:
             day = sch_dct['days'][day_num]
             tmp_events = []
@@ -267,6 +270,13 @@ class Schedule:
             valid, validity_msg, validity_data = self.__validate_add_event(sch_event, date)
             if valid:
                 selected_day['events'].append(sch_event)
+                if len(selected_day['events']) > self.sch_options['daily_event_limit']:
+                    event_str = ""
+                    for next_event in selected_day['events']:
+                        event_str += str(next_event.as_dict())
+                        event_str += ", "
+                    event_str = event_str.strip(", ")
+                    raise ScheduleError('Date (%s) contains multiple (%s) instances of events (%s). Expected: %s event(s)on this date' % (date, len(selected_day['events']), event_str, self.sch_options['daily_event_limit']))
                 self.sch_quota.consume_quota_usage(sch_event, dates, consume=1)
             else:
                 # Invalid addition not allowed

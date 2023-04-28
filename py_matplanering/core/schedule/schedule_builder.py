@@ -18,7 +18,7 @@ from py_matplanering.utilities.logger import Logger, LoggerLevel
 
 import copy, random
 
-from typing import Any, Union, List
+from typing import Any, Union, List, Callable
 
 class ScheduleBuilderError(BaseError):
     def __init__(self, message, capture_data = {}):
@@ -62,6 +62,7 @@ class ScheduleBuilder:
         self.__planner = None
         self.__boundaries = None
         self.__sch_manager = ScheduleManager()
+        self.__filter_event_functions = []
 
     def set_planner(self, planner: PlannerBase):
         """ May only be called once. """
@@ -227,6 +228,15 @@ class ScheduleBuilder:
                     event_dates.append(date)
         return event_dates
 
+    def register_filter_event_function(self, filter_fn: Callable):
+        if not isinstance(filter_fn, Callable):
+            raise ScheduleBuilderError("Attempting to register non callable filter function: %s" % (filter_fn))
+        # Attempt to call filter_fn to make sure it works as intended before registering
+        tmp_sch = self.__sch_manager.spawn_minion_schedule('tmp_sch')
+        schedule_helper.run_filter_events_function(tmp_sch, '9999-12-31', [], filter_fn)
+        self.__filter_event_functions.append(filter_fn)
+        self.__sch_manager.despawn_minion_schedule('tmp_sch')
+
     def _filter_plannable_events(self, date_list: Union[str, list], sch_events: Union[ScheduleEvent, List[ScheduleEvent]]) -> List[ScheduleEvent]:
         Logger.log('Filter plannable events from date list: %s and schedule events: %s' % (date_list, sch_events), LoggerLevel.DEBUG)
         if not isinstance(date_list, list):
@@ -234,12 +244,9 @@ class ScheduleBuilder:
         if not isinstance(sch_events, list):
             sch_events = [sch_events]
 
-        filter_functions = [
-            schedule_helper.filter_events_by_date_period,
-            schedule_helper.filter_events_by_distance,
-            schedule_helper.filter_events_by_quota
-        ]
-        ok_events = schedule_helper.run_filter_events_function_chain(self.__sch_manager.get_master_schedule(), date_list, sch_events, filter_functions)
+        if len(self.__filter_event_functions) == 0:
+            raise ScheduleBuilderError("Missing filter event functions. Expected: at least one filter function. Call register_filter_event_function() to resolve issue.")
+        ok_events = schedule_helper.run_filter_events_function_chain(self.__sch_manager.get_master_schedule(), date_list, sch_events, self.__filter_event_functions)
         return ok_events
 
     def plan_indeterminate_schedule(self, candidates):

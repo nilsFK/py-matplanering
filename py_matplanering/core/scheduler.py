@@ -3,6 +3,7 @@
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.schedule.schedule_request import ScheduleRequest
 from py_matplanering.core.schedule.schedule_builder import ScheduleBuilder
+from py_matplanering.core.schedule.schedule import Schedule
 from py_matplanering.core.planner.planner_base import PlannerBase
 # Handlers
 from py_matplanering.core.handler.impl.setup_handler import (SetupHandler)
@@ -25,13 +26,14 @@ from py_matplanering.utilities import time_helper
 from py_matplanering.utilities.logger import Logger, LoggerLevel
 
 class Scheduler:
-    def __init__(self, planner: PlannerBase, sch_options: dict):
+    def __init__(self, planner: PlannerBase, sch_options: dict, init_sch: Schedule=None):
         self.__planner = planner
         self.__sch_options = sch_options
+        self.__init_sch = init_sch
 
     def create_schedule(self, sch_inp: ScheduleInput):
         handler_order = [
-            SetupHandler().with_input(self.__planner, sch_inp, self.__sch_options),
+            SetupHandler().with_input(self.__planner, sch_inp, self.__sch_options, self.__init_sch),
             DeterminateDecideCandidateHandler(),
             IndeterminatePlanningHandler(),
             DeterminatePlanningHandler(),

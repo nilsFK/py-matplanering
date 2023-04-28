@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from py_matplanering.core.schedule.schedule import ScheduleEvent
+from py_matplanering.core.schedule.schedule import Schedule, ScheduleEvent
 
 from typing import Union
 
 class ScheduleInput:
-    def __init__(self, event_data: dict, rule_set: Union[dict, list]):
+    def __init__(self, event_data: dict, rule_set: Union[dict, list], init_schedule: Schedule=None):
         # Find global rules and insert those into event data
         self.org_event_data_dct = event_data
         if isinstance(rule_set, dict):
@@ -16,6 +16,7 @@ class ScheduleInput:
         self.event_data_lst = None
         self.__converted = False
         self.__require_active = False
+        self.__init_schedule = init_schedule
 
     def get_event_data(self, require_active: bool=False, event_defaults={}) -> list:
         # Lazy convertion of event data (dict) to schedule events (list of ScheduleEvent)
@@ -44,3 +45,6 @@ class ScheduleInput:
 
     def get_rule_set(self) -> list:
         return self.org_rule_set_lst
+
+    def get_schedule(self) -> Schedule:
+        return self.__init_schedule

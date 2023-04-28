@@ -13,8 +13,8 @@ class PlannerRandomizer(PlannerBase):
     def __init__(self):
         pass
 
-    def plan_init(self, sch_options: dict) -> Schedule:
-        schedule = schedule_helper.make_schedule(sch_options)
+    def plan_init(self, sch_options: dict, prep_events: dict={}) -> Schedule:
+        schedule = schedule_helper.make_schedule(sch_options, prep_events)
         self._sch_builder.set_build_options(dict(
             apply_boundaries=False # ignore boundaries since events are randomized
         ))

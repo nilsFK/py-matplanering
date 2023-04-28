@@ -18,9 +18,10 @@ from typing import Any
 """
 class PlannerBase(metaclass=ABCMeta):
     @abstractmethod
-    def plan_init(self, inp: ScheduleInput, sch_options: dict) -> Schedule:
-        """ initializes a planning session with given input and
-        related schedule options. """
+    def plan_init(self, sch_options: dict, schedule: Schedule=None) -> Schedule:
+        """ initializes a planning session with schedule options.
+            If schedule is not provided, a new schedule will be created
+            from sch_options and returned. """
         pass
 
     @abstractmethod

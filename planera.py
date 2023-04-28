@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import argparse, json, copy
+import argparse, json, copy, random
 from pathlib import Path
 
-from py_matplanering.core.automator_controller import AutomatorController
-from py_matplanering.core.planner.planner_randomizer import PlannerRandomizer
-from py_matplanering.core.planner.planner_food_menu import PlannerFoodMenu
+from py_matplanering.automator_controller import AutomatorController
 from py_matplanering.core.schedule.schedule import Schedule
 from py_matplanering.core.error import AppError
 
@@ -13,8 +11,7 @@ from py_matplanering.utilities.common import (
     as_obj, as_dict, underscore_to_camelcase, camelcase_to_underscore
 )
 from py_matplanering.utilities.config import readConfig
-from py_matplanering.utilities import time_helper
-from py_matplanering.utilities import loader
+from py_matplanering.utilities import time_helper, loader, schedule_helper
 from py_matplanering.utilities.logger import Logger, LoggerLevel
 
 from tabulate import tabulate
@@ -23,7 +20,7 @@ def make_schedule(args: dict) -> dict:
     raw_event_data = args['event_data']
     raw_rule_set = args['rule_set']
     automator_ctrl = AutomatorController(args['startdate'], args['enddate'], sch_options=dict(
-        include_props=['id', 'name'],
+        include_props=['id', 'name', 'prio'],
         event_defaults=dict(
             prio=5000
         ),
@@ -31,6 +28,8 @@ def make_schedule(args: dict) -> dict:
     ))
     planner = loader.build_planner(args['planner'])
     automator_ctrl.set_planner(planner)
+    if args.get('schedule'):
+        automator_ctrl.init_schedule(args['schedule'])
     schedule = automator_ctrl.build(raw_event_data, raw_rule_set)
     if schedule is False:
         print("Failed to create schedule due to: %s" % (automator_ctrl.get_build_error('msg')))
@@ -103,7 +102,7 @@ def make_date_table(sch: Schedule) -> tuple:
             for boundary in boundaries:
                 printable_boundaries.append(type(boundary).__name__)
             row2.append(", ".join(printable_boundaries))
-            method = sch_event.get_metadata('method')
+            method = sch_event.get_metadata('method', 'unknown')
             method_str = ''
             for item in method:
                 method_str += "{item}\n".format(**{
@@ -124,6 +123,24 @@ def make_date_table(sch: Schedule) -> tuple:
             row2.append(quota_str)
             table.append(row2)
     return table, headers
+
+def sample_schedule(schedule_dct: dict, n_percentage: int, n_min: int=1):
+    """ Samples a subset of schedule_dct and returns a new dict """
+    if n_percentage > 100 or n_percentage < 0:
+        raise Exception('n_percentage must range between 0-100, instead got: %s' % (n_percentage))
+    d_keys = list(schedule_dct['days'])
+    k = int((n_percentage/100)*len(d_keys))
+    if k < n_min:
+        k = n_min
+    sampled_d_keys = random.sample(d_keys, k)
+
+    # clear events from days that are not sampled
+    sampled_schedule_dct = copy.deepcopy(schedule_dct)
+    for date in sampled_schedule_dct['days']:
+        day = sampled_schedule_dct['days'][date]
+        if date not in sampled_d_keys:
+            day['events'] = []
+    return sampled_schedule_dct
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser(description='Process sources to produce a schedule.')
@@ -154,9 +171,26 @@ if __name__ == '__main__':
     if len(event_data_str) == 0:
         raise AppError("event data source file is empty. Expected: JSON formatted data")
     event_data_dct = json.loads(event_data_str)
+    del event_data_str
     # print("Event data:", event_data_dct)
 
-    # Parse and get file paths
+    # Read schedule output file
+    sampled_schedule_obj = None
+    if config_data.get('init_schedule_path'):
+        Logger.log('Initializing schedule from given path: %s' % (config_data['init_schedule_path']), verbosity=LoggerLevel.INFO)
+        try:
+            sampled_schedule_str = Path(config_data['init_schedule_path']).read_text()
+            sampled_schedule_dct = json.loads(sampled_schedule_str)
+            sampled_schedule_dct = sample_schedule(sampled_schedule_dct, n_percentage=10)
+            del sampled_schedule_str
+        except FileNotFoundError:
+            sampled_schedule_dct = None
+            Logger.log('File to init schedule path not found.', verbosity=LoggerLevel.INFO)
+        if sampled_schedule_dct:
+            # Convert sampled_schedule_dct: dict --> sampled_schedule_obj: Schedule
+            sampled_schedule_obj = schedule_helper.parse_schedule(sampled_schedule_dct)
+
+    # Parse and get rule set file paths
     Logger.log('fetch rule set data', verbosity=LoggerLevel.INFO)
     paths_str = config_data['rule_set_path']
     paths = paths_str.split(",")
@@ -190,12 +224,13 @@ if __name__ == '__main__':
         startdate=config_data['startdate'],
         enddate=config_data['enddate'],
         planner=config_data['planner'],
-        iter_method=config_data['iter_method']
+        iter_method=config_data['iter_method'],
+        schedule=sampled_schedule_obj
     ))
-    try:
-        if schedule is False:
-            Logger.log('Schedule is False', LoggerLevel.FATAL)
-        if schedule is not False:
+    if schedule is False:
+        Logger.log('Schedule is False', LoggerLevel.FATAL)
+    if schedule is not False:
+        try:
             sch_dct = schedule.as_dict()
             if sch_dct is None:
                 raise AppError('Unexpected None returned by schedule.as_dict()')
@@ -213,8 +248,13 @@ if __name__ == '__main__':
                 if table and headers:
                     print(tabulate(table, headers, tablefmt=config_data.get('tablefmt', 'fancy_grid')))
             print("OK!")
-    finally:
-        if Logger.is_activated():
-            Logger.print(max_verbosity=max_verbosity)
+        except Exception as exc:
+            if Logger.is_activated():
+                Logger.print(max_verbosity=max_verbosity)
+            raise exc
+    if Logger.is_activated():
+        Logger.print_log(max_verbosity=max_verbosity)
+
     if schedule:
         print("Total planned events: %s / %s" % (len(schedule.get_events()), len(schedule.get_days())))
+
