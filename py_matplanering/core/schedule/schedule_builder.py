@@ -107,7 +107,7 @@ class ScheduleBuilder:
     def allow_build_candidates(self):
         return self.__build_options['build_candidates'] is True
 
-    def get_candidates(self, as_list: bool=False, as_sorted: bool=False) -> Any:
+    def get_candidates(self, as_sorted: bool=False, as_list: bool=False) -> Any:
         candidates = self.__sch_manager.get_minion_schedule('candidates').get_days()
         if as_list:
             if as_sorted:
@@ -120,7 +120,7 @@ class ScheduleBuilder:
         if self.__build_options['build_candidates'] is False:
             raise ScheduleBuilderError('Unable to build candidates because marked as not allowed')
         event_data = self.sch_inp.get_event_data(require_active=True, event_defaults=self.__sch_manager.get_master_schedule().get_options('event_defaults'))
-        all_dates = self.get_candidates(as_list=True, as_sorted=True)
+        all_dates = self.get_candidates(as_sorted=True, as_list=True)
         final_rule_set = schedule_helper.convert_rule_set(self.sch_inp, boundaries)
         Logger.log('Converted final rule set into: %s' % (final_rule_set), LoggerLevel.INFO)
         # Narrow down matching event <-> date by applying date intersection by each boundary
@@ -229,11 +229,18 @@ class ScheduleBuilder:
         return event_dates
 
     def register_filter_event_function(self, filter_fn: Callable):
+        """ Registers a filter event function.
+        It mainly adds the filter function to the builder.
+        But it also runs it through a test run to make sure that the
+        filter function works as intended.
+        """
         if not isinstance(filter_fn, Callable):
             raise ScheduleBuilderError("Attempting to register non callable filter function: %s" % (filter_fn))
         # Attempt to call filter_fn to make sure it works as intended before registering
         tmp_sch = self.__sch_manager.spawn_minion_schedule('tmp_sch')
-        schedule_helper.run_filter_events_function(tmp_sch, '9999-12-31', [], filter_fn)
+        tmp_sch.add_date('9999-12-31')
+        ok_events = schedule_helper.run_filter_events_function(tmp_sch, '9999-12-31', [], filter_fn)
+        assert isinstance(ok_events, list) and len(ok_events) == 0
         self.__filter_event_functions.append(filter_fn)
         self.__sch_manager.despawn_minion_schedule('tmp_sch')
 

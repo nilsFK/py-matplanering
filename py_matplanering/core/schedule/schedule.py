@@ -74,7 +74,7 @@ class ScheduleEvent:
             return self.__meta
         if key in self.__meta:
             return self.__meta[key]
-        return default
+        return [default]
 
     def as_dict(self, short: bool=False):
         dct = copy.deepcopy(self.__event)
@@ -159,7 +159,8 @@ class Schedule:
             enddate=sch_options['enddate'],
             days={},
             use_validation=bool(sch_options.get('use_validation', True)),
-            event_defaults=sch_options.get('event_defaults', {})
+            event_defaults=sch_options.get('event_defaults', {}),
+            name=sch_options.get('name')
         )
         dr = get_date_range(sch_options['startdate'], sch_options['enddate'])
         for date in dr:
@@ -170,6 +171,17 @@ class Schedule:
         self.sch_quota = ScheduleQuota()
         # wr = get_week_range(sch_options['startdate'], sch_options['enddate'])
         # self.week_range = wr # Lazy load?
+
+    def set_name(self, name: str):
+        self.schedule['name'] = name
+
+    def get_name(self) -> str:
+        return self.schedule['name']
+
+    def add_date(self, date: str):
+        if date in self.schedule['days']:
+            raise ScheduleError('Attempting to add existing date to schedule: %s' % (date))
+        self.schedule['days'][date] = {'events': [] }
 
     def as_dict(self) -> dict:
         sch_dct = copy.deepcopy(self.schedule)

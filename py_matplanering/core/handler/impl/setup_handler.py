@@ -29,7 +29,13 @@ class SetupHandler(AbstractHandler):
         sch_builder.set_schedule_input(self.__sch_inp)
         schedule = self.__planner.plan_init(self.__sch_options, self.__init_sch)
         sch_builder.set_schedule(schedule)
-        sch_builder.register_filter_event_function(schedule_helper.filter_events_by_date_period)
-        sch_builder.register_filter_event_function(schedule_helper.filter_events_by_distance)
-        sch_builder.register_filter_event_function(schedule_helper.filter_events_by_quota)
+        filter_functions = [
+            schedule_helper.filter_events_by_placing,
+            schedule_helper.filter_events_by_date_period,
+            schedule_helper.filter_events_by_distance,
+            schedule_helper.filter_events_by_quota
+        ]
+        for filter_fn in filter_functions:
+            Logger.log('Registering filter event function: %s' % (filter_fn), LoggerLevel.DEBUG)
+            sch_builder.register_filter_event_function(filter_fn)
         return super().handle(request)

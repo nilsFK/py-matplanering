@@ -51,6 +51,7 @@ class ScheduleManager:
             raise ScheduleManagerError('sch_key: %s is already defined' % (sch_key))
         if len(sch_key) == 0:
             raise ScheduleManagerError('sch_key must be a non zero length string')
+        schedule.set_name(sch_key)
         self.schedules[sch_key] = schedule
         if is_master:
             if self.master:
@@ -79,10 +80,11 @@ class ScheduleManager:
     def _add_minion_schedule(self, schedule: Schedule, sch_key: str):
         self.__add_schedule(schedule, sch_key, is_master=False)
 
-    def spawn_minion_schedule(self, sch_key: str):
+    def spawn_minion_schedule(self, sch_key: str) -> Schedule:
         """ Copies the master as it is and becomes a minion. """
         minion = copy.deepcopy(self.get_master_schedule())
         self._add_minion_schedule(minion, sch_key)
+        return self.schedules[sch_key]
 
     def despawn_minion_schedule(self, sch_key: str):
         self.__remove_schedule(sch_key)
@@ -95,10 +97,10 @@ class ScheduleManager:
             return self.schedules
         return self.schedules[sch_key]
 
-    def get_master_schedule(self):
+    def get_master_schedule(self) -> Schedule:
         return self.schedules['master']
 
-    def get_minion_schedule(self, sch_key: str):
+    def get_minion_schedule(self, sch_key: str) -> Schedule:
         return self.schedules[sch_key]
 
     def __add_event(self, sch_key: str, date_list: list, sch_event: ScheduleEvent, remove_from_minions: bool=False):

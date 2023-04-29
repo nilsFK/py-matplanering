@@ -71,6 +71,14 @@ def filter_boundaries(boundaries: dict, apply_filters: dict={}) -> dict:
                 filtered_boundaries[boundary_key] = boundary_obj
     return filtered_boundaries
 
+def filter_events_by_placing(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
+    """ Returns empty list if date has been placed in schedule (sch) """
+    placed_events = sch.get_events_by_date(date)
+    if len(placed_events) > 0:
+        return []
+    # date has not been placed in sch, return all events
+    return sch_events
+
 def filter_events_by_date_period(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
     filtered_sch_events = []
     for event in sch_events:
@@ -108,6 +116,8 @@ def filter_events_by_distance(sch: Schedule, date: str, sch_events: List[Schedul
     return filtered_sch_events
 
 def run_filter_events_function(sch: Schedule, date: str, sch_events: List[ScheduleEvent], filter_fn: Callable) -> List[ScheduleEvent]:
+    if not isinstance(sch, Schedule):
+        raise Exception('sch is not instance of Schedule, instead got: %s' % (sch))
     filtered_sch_events = filter_fn(sch, date, sch_events)
     if not isinstance(filtered_sch_events, list):
         raise Exception('Applied filter function unexpectedly returned non list: %s' % (filtered_sch_events))
@@ -130,15 +140,18 @@ def filter_events(sch: Schedule, date: str, sch_events: list, condition: Callabl
             filtered_sch_events.append(event)
     return filtered_sch_events
 
-def count_placed_schedule_days(sch: Schedule) -> int:
-    """ Counts how many days in schedule have been "placed", e.g.
-        contains at least one event. """
-    placed_days_counter = 0
+def get_placed_schedule_dates(sch: Schedule) -> List[str]:
+    placed_sch_dates = []
     result = sch.get_grouped_events()
     for date in result:
         if len(result[date]) > 0:
-            placed_days_counter += 1
-    return placed_days_counter
+            placed_sch_dates.append(date)
+    return placed_sch_dates
+
+def count_placed_schedule_days(sch: Schedule) -> int:
+    """ Counts how many days in schedule have been "placed", e.g.
+        contains at least one event. """
+    return len(get_placed_schedule_dates(sch))
 
 def parse_schedule(sch_dct: dict) -> Schedule:
     """ Converts sch_dct into an instance of Schedule

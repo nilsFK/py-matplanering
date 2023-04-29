@@ -11,7 +11,7 @@ from py_matplanering.utilities.common import (
     as_obj, as_dict, underscore_to_camelcase, camelcase_to_underscore
 )
 from py_matplanering.utilities.config import readConfig
-from py_matplanering.utilities import time_helper, loader, schedule_helper
+from py_matplanering.utilities import time_helper, loader, schedule_helper, common
 from py_matplanering.utilities.logger import Logger, LoggerLevel
 
 from tabulate import tabulate
@@ -130,7 +130,7 @@ def sample_schedule(schedule_dct: dict, n_percentage: int, n_min: int=1):
         raise Exception('n_percentage must range between 0-100, instead got: %s' % (n_percentage))
     d_keys = list(schedule_dct['days'])
     k = int((n_percentage/100)*len(d_keys))
-    if k < n_min:
+    if n_min is not None and k < n_min:
         k = n_min
     sampled_d_keys = random.sample(d_keys, k)
 
@@ -181,7 +181,10 @@ if __name__ == '__main__':
         try:
             sampled_schedule_str = Path(config_data['init_schedule_path']).read_text()
             sampled_schedule_dct = json.loads(sampled_schedule_str)
-            sampled_schedule_dct = sample_schedule(sampled_schedule_dct, n_percentage=10)
+            sampled_schedule_dct = sample_schedule(sampled_schedule_dct,
+                n_percentage=common.nvl_int(config_data.get('sample_size_percent')),
+                n_min=common.nvl_int(config_data.get('sample_size_min'))
+            )
             del sampled_schedule_str
         except FileNotFoundError:
             sampled_schedule_dct = None
@@ -189,6 +192,8 @@ if __name__ == '__main__':
         if sampled_schedule_dct:
             # Convert sampled_schedule_dct: dict --> sampled_schedule_obj: Schedule
             sampled_schedule_obj = schedule_helper.parse_schedule(sampled_schedule_dct)
+            sampled_schedule_obj.set_name('sampled_schedule')
+            Logger.log('Reading pre-defined schedule with %s events' % (schedule_helper.count_placed_schedule_days(sampled_schedule_obj)), LoggerLevel.INFO)
 
     # Parse and get rule set file paths
     Logger.log('fetch rule set data', verbosity=LoggerLevel.INFO)
