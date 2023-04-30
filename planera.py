@@ -124,14 +124,15 @@ def make_date_table(sch: Schedule) -> tuple:
             table.append(row2)
     return table, headers
 
-def sample_schedule(schedule_dct: dict, n_percentage: int, n_min: int=1):
+def sample_schedule(schedule_dct: dict, n_percentage: int, n_min: int=1, d_keys: list=None):
     """ Samples a subset of schedule_dct and returns a new dict """
     if n_percentage > 100 or n_percentage < 0:
         raise Exception('n_percentage must range between 0-100, instead got: %s' % (n_percentage))
-    d_keys = list(schedule_dct['days'])
+    if d_keys is None:
+        d_keys = list(schedule_dct['days'])
     k = int((n_percentage/100)*len(d_keys))
     if n_min is not None and k < n_min:
-        k = n_min
+        k = min(n_min, len(d_keys))
     sampled_d_keys = random.sample(d_keys, k)
 
     # clear events from days that are not sampled
@@ -181,9 +182,16 @@ if __name__ == '__main__':
         try:
             sampled_schedule_str = Path(config_data['init_schedule_path']).read_text()
             sampled_schedule_dct = json.loads(sampled_schedule_str)
+            d_keys = None # use default: all dates in sampled_schedule_dct
+            if config_data.get('sample_method') == 'require_placed_day':
+                d_keys = []
+                for date in sampled_schedule_dct['days']:
+                    if len(sampled_schedule_dct['days'][date]['events']) > 0:
+                        d_keys.append(date)
             sampled_schedule_dct = sample_schedule(sampled_schedule_dct,
                 n_percentage=common.nvl_int(config_data.get('sample_size_percent')),
-                n_min=common.nvl_int(config_data.get('sample_size_min'))
+                n_min=common.nvl_int(config_data.get('sample_size_min')),
+                d_keys=d_keys
             )
             del sampled_schedule_str
         except FileNotFoundError:

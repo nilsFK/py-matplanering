@@ -46,5 +46,5 @@ class ScheduleInput:
     def get_rule_set(self) -> list:
         return self.org_rule_set_lst
 
-    def get_schedule(self) -> Schedule:
+    def get_init_schedule(self) -> Schedule:
         return self.__init_schedule

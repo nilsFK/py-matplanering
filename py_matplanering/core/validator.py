@@ -81,15 +81,45 @@ class Validator:
         return rs
 
     @staticmethod
+    def __validate_initial_schedule(init_sch: Schedule, event_data: dict) -> dict:
+        rs = dict(ok=False, data=init_sch, msg=None)
+        init_sch_event_ids = list(set([event.get_id() for event in init_sch.get_events()]))
+
+        event_pool_sch_event_ids = []
+        for event_row in event_data['data']:
+            event_pool_sch_event_ids.append(event_row['id'])
+        for idx, init_sch_event_id in enumerate(init_sch_event_ids):
+            if init_sch_event_id not in event_pool_sch_event_ids:
+                return Validator.report_error('Initial schedule (init_sch) contains event id missing from event pool', index=idx, error_container=rs, id_=init_sch_event_id)
+        if rs['ok'] and rs['msg']:
+            raise ValidatorError('Validation error: marked as OK but contains msg. Expected msg=None, instead got: %s' % (rs['msg']))
+        rs['ok'] = True
+        return rs
+
+    @staticmethod
     def pre_validate(inp: ScheduleInput) -> tuple:
         Logger.log('Running input through pre validation method', verbosity=LoggerLevel.DEBUG)
+
+        # Validate: rule set
+        # ==================
         for rule_set_dct in inp.get_org_rule_set():
             validation_rule_set = Validator.__validate_rule_set(rule_set_dct)
             if not validation_rule_set['ok']:
                 return (False, validation_rule_set['data'], validation_rule_set['msg'])
-            validation_event_data = Validator.__validate_event_data(inp.get_org_event_data())
-            if not validation_event_data['ok']:
-                return (False, validation_event_data['data'], validation_event_data['msg'])
+
+        # Validate: event data
+        # ====================
+        validation_event_data = Validator.__validate_event_data(inp.get_org_event_data())
+        if not validation_event_data['ok']:
+            return (False, validation_event_data['data'], validation_event_data['msg'])
+
+        # Validate: schedule
+        # ==================
+        validation_init_sch = Validator.__validate_initial_schedule(inp.get_init_schedule(), inp.get_org_event_data())
+        if not validation_init_sch['ok']:
+            return (False, validation_init_sch['data'], validation_init_sch['msg'])
+
+        # All validation OK
         return (True, None, None)
 
     @staticmethod
