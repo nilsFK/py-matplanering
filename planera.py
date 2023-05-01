@@ -25,6 +25,8 @@ def make_schedule(args: dict) -> dict:
             prio=5000
         ),
         iter_method=args['iter_method']
+    ), build_options=dict(
+        iterations=args.get('iterations', 1)
     ))
     planner = loader.build_planner(args['planner'])
     automator_ctrl.set_planner(planner)
@@ -238,7 +240,8 @@ if __name__ == '__main__':
         enddate=config_data['enddate'],
         planner=config_data['planner'],
         iter_method=config_data['iter_method'],
-        schedule=sampled_schedule_obj
+        schedule=sampled_schedule_obj,
+        iterations=common.nvl_int(config_data['iterations'])
     ))
     if schedule is False:
         Logger.log('Schedule is False', LoggerLevel.FATAL)

@@ -168,6 +168,14 @@ def parse_schedule(sch_dct: dict) -> Schedule:
             schedule.add_event([date], sch_event_obj)
     return schedule
 
+def is_schedule_complete(sch: Schedule) -> bool:
+    """ Are all days planned with event(s) in schedule? """
+    for date in sch.get_days():
+        events = sch.get_events_by_date(date)
+        if len(events) == 0:
+            return False
+    return True
+
 # TODO: implement if needed
 # def merge_schedules(sch1: Schedule, sch2: Schedule, conflict_schema: dict={}):
 #     """ Merge sch1 and sch2 into a new schedule.

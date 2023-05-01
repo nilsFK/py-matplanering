@@ -31,7 +31,7 @@ class Scheduler:
         self.__sch_options = sch_options
         self.__init_sch = init_sch
 
-    def create_schedule(self, sch_inp: ScheduleInput):
+    def create_schedule(self, sch_inp: ScheduleInput) -> Schedule:
         handler_order = [
             SetupHandler().with_input(self.__planner, sch_inp, self.__sch_options, self.__init_sch),
             DeterminateDecideCandidateHandler(),

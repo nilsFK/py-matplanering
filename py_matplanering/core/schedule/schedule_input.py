@@ -48,3 +48,6 @@ class ScheduleInput:
 
     def get_init_schedule(self) -> Schedule:
         return self.__init_schedule
+
+    def set_init_schedule(self, init_schedule: Schedule):
+        self.__init_schedule = init_schedule
