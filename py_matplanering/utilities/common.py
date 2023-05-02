@@ -82,8 +82,13 @@ def underscore_to_camelcase(name):
     """ under_score to UnderScore """
     return ''.join(x.capitalize() or '_' for x in name.split('_'))
 
-def nvl(val, replacement=''):
+def nvl(val: Any, replacement: Any=''):
     return val if val is not None else replacement
+
+# nvl which converts val to int if not None.
+# Defaults to None instead of empty string.
+def nvl_int(val: Any, replacement: Any=None):
+    return int(val) if val is not None else replacement
 
 class Consumable():
     def __init__(self, consumable: Any, consumption_quota: int=None):
@@ -127,6 +132,3 @@ class Consumable():
         return self.consumption_quota - self.consumed_count == 0
     # def __len__(self):
         # return len(self.consumable)
-
-
-

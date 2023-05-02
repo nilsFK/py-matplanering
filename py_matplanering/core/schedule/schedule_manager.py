@@ -27,7 +27,7 @@ class ScheduleManager:
     One and only one schedule can be set to master which combined
     with tracking events will add events to master and remove from
     minions. Master schedule is not mandatory, all schedules could
-    be minions but tracking is not available with such a setup.
+    be minions but tracking (as just described) is not available with such a setup.
     Example:
     master_sch = Schedule(...)
     master_sch.add_event(...)
@@ -51,6 +51,7 @@ class ScheduleManager:
             raise ScheduleManagerError('sch_key: %s is already defined' % (sch_key))
         if len(sch_key) == 0:
             raise ScheduleManagerError('sch_key must be a non zero length string')
+        schedule.set_name(sch_key)
         self.schedules[sch_key] = schedule
         if is_master:
             if self.master:
@@ -59,19 +60,34 @@ class ScheduleManager:
                 sch_key = 'master'
             self.master = sch_key
 
+    def __remove_schedule(self, sch_key: str=None):
+        if sch_key is None:
+            raise ScheduleManagerError('key must be valid string (None is not a possible value)')
+        if sch_key not in self.schedules:
+            raise ScheduleManagerError('sch_key: %s is undefined' % (sch_key))
+        if len(sch_key) == 0:
+            raise ScheduleManagerError('sch_key must be a non zero length string')
+        if sch_key == 'master':
+            raise ScheduleManagerError('Attempt to remove master schedule is not allowed.')
+        del self.schedules[sch_key]
+
     def has_master_schedule(self):
         return self.master is not None
 
     def add_master_schedule(self, schedule: Schedule):
         self.__add_schedule(schedule, sch_key='master', is_master=True)
 
-    def add_minion_schedule(self, schedule: Schedule, sch_key: str):
+    def _add_minion_schedule(self, schedule: Schedule, sch_key: str):
         self.__add_schedule(schedule, sch_key, is_master=False)
 
-    def spawn_minion_schedule(self, sch_key: str):
+    def spawn_minion_schedule(self, sch_key: str) -> Schedule:
         """ Copies the master as it is and becomes a minion. """
         minion = copy.deepcopy(self.get_master_schedule())
-        self.add_minion_schedule(minion, sch_key)
+        self._add_minion_schedule(minion, sch_key)
+        return self.schedules[sch_key]
+
+    def despawn_minion_schedule(self, sch_key: str):
+        self.__remove_schedule(sch_key)
 
     def set_master(self, master_sch_key: str):
         self.master = master_sch_key
@@ -81,10 +97,10 @@ class ScheduleManager:
             return self.schedules
         return self.schedules[sch_key]
 
-    def get_master_schedule(self):
+    def get_master_schedule(self) -> Schedule:
         return self.schedules['master']
 
-    def get_minion_schedule(self, sch_key: str):
+    def get_minion_schedule(self, sch_key: str) -> Schedule:
         return self.schedules[sch_key]
 
     def __add_event(self, sch_key: str, date_list: list, sch_event: ScheduleEvent, remove_from_minions: bool=False):

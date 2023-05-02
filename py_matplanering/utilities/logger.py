@@ -63,7 +63,7 @@ class Logger(metaclass=common.Singleton):
         return [entry for entry in logger__log if entry['verbosity'] <= max_verbosity.value]
 
     @staticmethod
-    def print(format_=None, max_verbosity: LoggerLevel=None):
+    def print_log(format_=None, max_verbosity: LoggerLevel=None):
         if format_:
             raise NotImplementedError
         if logger__settings['on'] is False:
