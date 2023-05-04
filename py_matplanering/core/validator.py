@@ -115,9 +115,10 @@ class Validator:
 
         # Validate: schedule
         # ==================
-        validation_init_sch = Validator.__validate_initial_schedule(inp.get_init_schedule(), inp.get_org_event_data())
-        if not validation_init_sch['ok']:
-            return (False, validation_init_sch['data'], validation_init_sch['msg'])
+        if inp.get_init_schedule():
+            validation_init_sch = Validator.__validate_initial_schedule(inp.get_init_schedule(), inp.get_org_event_data())
+            if not validation_init_sch['ok']:
+                return (False, validation_init_sch['data'], validation_init_sch['msg'])
 
         # All validation OK
         return (True, None, None)
