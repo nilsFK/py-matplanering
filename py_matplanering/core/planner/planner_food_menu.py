@@ -46,6 +46,7 @@ class PlannerFoodMenu(PlannerBase):
                     if row.get_id() == first_row['event'].get_id():
                         return row
             return None
+
         # Step 2: Check which event is the least planned. Select that event.
         selected_event = select_event('planned', reverse=False) # lowest planned first
         if selected_event:

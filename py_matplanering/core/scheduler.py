@@ -22,14 +22,39 @@ from py_matplanering.core.handler.handler_helper import (
     link_handler_chain,
     run_handler_chain
 )
-from py_matplanering.utilities import time_helper
+from py_matplanering.utilities import time_helper, misc
 from py_matplanering.utilities.logger import Logger, LoggerLevel
+
+class SchedulerError(BaseError):
+    def __init__(self, message, capture_data = {}):
+        super(SchedulerError, self).__init__(message)
+        self.capture_data = capture_data
+
+    def __str__(self):
+        return self.message
 
 class Scheduler:
     def __init__(self, planner: PlannerBase, sch_options: dict, init_sch: Schedule=None):
         self.__planner = planner
         self.__sch_options = sch_options
         self.__init_sch = init_sch
+        self.__strategy = misc.BuildStrategy.IGNORE_CONNECTED_DAYS
+        self.__pre_processed = False
+
+    def set_strategy(self, strategy: misc.BuildStrategy):
+        self.__strategy = strategy
+
+    def pre_process(self):
+        """ Any kind of pre processing of planner, schedule options or init schedule
+        goes into this method. This method can only be executed once. """
+        if self.__pre_processed:
+            raise SchedulerError('Scheduler has already executed pre_process()')
+        if self.__init_sch:
+            if self.__strategy == misc.BuildStrategy.IGNORE_CONNECTED_DAYS:
+                pass # Do nothing, connected days will be ignored
+            elif self.__strategy == misc.BuildStrategy.REPLACE_CONNECTED_DAYS:
+                # TODO: remove connected days within planning range
+                pass
 
     def create_schedule(self, sch_inp: ScheduleInput) -> Schedule:
         handler_order = [

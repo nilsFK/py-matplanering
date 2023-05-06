@@ -26,7 +26,7 @@ class ScheduleManager:
     managed schedules, in contrast to being globally unique.
     One and only one schedule can be set to master which combined
     with tracking events will add events to master and remove from
-    minions. Master schedule is not mandatory, all schedules could
+    minions. Master schedule is not mandatory; all schedules could
     be minions but tracking (as just described) is not available with such a setup.
     Example:
     master_sch = Schedule(...)

@@ -153,16 +153,22 @@ class Schedule:
     def __init__(self, sch_options: dict, prep_events: dict={}):
         # self.schedule contains any details that should be
         # visible outside the class via as_dict.
+        if sch_options['planning_range']:
+            planning_startdate, planning_enddate = sch_options['planning_range']
+        else:
+            planning_startdate, planning_enddate = sch_options['schedule_range']
         self.schedule = dict(
             built_dt=False,
-            startdate=sch_options['startdate'],
-            enddate=sch_options['enddate'],
+            schedule_startdate=sch_options['schedule_range'][0],
+            schedule_enddate=sch_options['schedule_range'][1],
+            planning_startdate=planning_startdate,
+            planning_enddate=planning_enddate,
             days={},
             use_validation=bool(sch_options.get('use_validation', True)),
             event_defaults=sch_options.get('event_defaults', {}),
             name=sch_options.get('name')
         )
-        dr = get_date_range(sch_options['startdate'], sch_options['enddate'])
+        dr = get_date_range(self.schedule['schedule_startdate'], self.schedule['schedule_enddate'])
         for date in dr:
             # self.schedule['days'][date] = { 'events': [] }
             self.schedule['days'][date] = { 'events': prep_events.get(date, []) }
@@ -208,10 +214,10 @@ class Schedule:
         return self.schedule['days']
 
     def get_startdate(self) -> str:
-        return self.schedule['startdate']
+        return self.schedule['schedule_startdate']
 
     def get_enddate(self) -> str:
-        return self.schedule['enddate']
+        return self.schedule['schedule_enddate']
 
     def get_events_by_date(self, date: str) -> list:
         day = self.get_day(date)
@@ -261,6 +267,7 @@ class Schedule:
             raise ScheduleError('sch_event must be ScheduleEvent, instead got type %s (%s)' % (type(sch_event), sch_event))
         if self.schedule['use_validation'] is False:
             return (True, 'skipped', None)
+        # TODO: check if date is within planning range => raise ScheduleError
         ok, msg, data = self.sch_quota.validate(sch_event, [date])
         return ok, msg, data
 

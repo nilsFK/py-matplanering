@@ -97,7 +97,27 @@ class Validator:
         return rs
 
     @staticmethod
-    def pre_validate(inp: ScheduleInput) -> tuple:
+    def __validate_sch_options(sch_options: dict) -> dict:
+        rs = dict(ok=False, data=sch_options, msg=None)
+        if sch_options['planning_range']:
+            if not isinstance(sch_options['planning_range'], tuple):
+                return Validator.report_error('Schedule options: planning_range is not instance of tuple. Instead got: %s' % (sch_options['planning_range']))
+            pr_startdate, pr_enddate = sch_options['planning_range']
+            sr_startdate, sr_enddate = sch_options['schedule_range']
+            if pr_startdate < sr_startdate:
+                return Validator.report_error('Schedule options: invalid range dependency. planning range startdate must be higher than schedule range. Instead got: pr_startdate=%s, sr_startdate=%s.' % (pr_startdate, sr_startdate))
+            if pr_enddate > sr_enddate:
+                return Validator.report_error('Schedule options: invalid range dependency. planning range enddate must be lower than schedule range. Instead got: pr_enddate=%s, sr_enddate=%s.' % (pr_enddate, sr_enddate))
+            if pr_startdate > pr_enddate:
+                return Validator.report_error('Schedule options: invalid range dependency. planning range startdate cannot be higher than planning range enddate. Instead got: pr_startdate=%s, pr_enddate=%s.' % (pr_startdate, pr_enddate))
+            if sr_startdate > sr_enddate:
+                return Validator.report_error('Schedule options: invalid range dependency. schedule range startdate cannot be higher than schedule range enddate. Instead got: sr_startdate=%s, sr_enddate=%s.' % (sr_startdate, sr_enddate))
+        if rs['ok'] and rs['msg']:
+            raise ValidatorError('Validation error: marked as OK but contains msg. Expected msg=None, instead got: %s' % (rs['msg']))
+        rs['ok'] = True
+
+    @staticmethod
+    def pre_validate(inp: ScheduleInput, sch_options: dict) -> tuple:
         Logger.log('Running input through pre validation method', verbosity=LoggerLevel.DEBUG)
 
         # Validate: rule set
@@ -119,6 +139,11 @@ class Validator:
             validation_init_sch = Validator.__validate_initial_schedule(inp.get_init_schedule(), inp.get_org_event_data())
             if not validation_init_sch['ok']:
                 return (False, validation_init_sch['data'], validation_init_sch['msg'])
+
+        # Validate: schedule options
+        # ===========================
+        if sch_options:
+            validation_sch_options = Validator.__validate_sch_options(sch_options)
 
         # All validation OK
         return (True, None, None)

@@ -3,9 +3,9 @@
 """
 misc.py is common low-level functionality
 and should not import anything except for
-built in packages. It is an alternative to
-common.py that is similar but may contain
-functions that are heavily correlated with
+built in packages and py_matplanering.utilities.
+It is an alternative to common.py that is similar
+but may contain functions that are heavily correlated with
 implementation details of the software.
 """
 import copy
@@ -13,6 +13,13 @@ import copy
 from py_matplanering.utilities import (
     time_helper
 )
+
+from enum import Enum, unique
+
+@unique
+class BuildStrategy(Enum):
+    IGNORE_CONNECTED_DAYS = 0
+    REPLACE_CONNECTED_DAYS = 1
 
 def make_event_quota(startdate: str, enddate: str, quota_template: dict) -> list:
     base_quota = copy.copy(quota_template)

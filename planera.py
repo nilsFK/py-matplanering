@@ -11,7 +11,7 @@ from py_matplanering.utilities.common import (
     as_obj, as_dict, underscore_to_camelcase, camelcase_to_underscore
 )
 from py_matplanering.utilities.config import readConfig
-from py_matplanering.utilities import time_helper, loader, schedule_helper, common
+from py_matplanering.utilities import time_helper, loader, schedule_helper, common, misc
 from py_matplanering.utilities.logger import Logger, LoggerLevel
 
 from tabulate import tabulate
@@ -19,14 +19,16 @@ from tabulate import tabulate
 def make_schedule(args: dict) -> dict:
     raw_event_data = args['event_data']
     raw_rule_set = args['rule_set']
-    automator_ctrl = AutomatorController(args['startdate'], args['enddate'], sch_options=dict(
+    sch_range = (args['schedule_startdate'], args['schedule_enddate'])
+    automator_ctrl = AutomatorController(sch_range, sch_options=dict(
         include_props=['id', 'name', 'prio'],
         event_defaults=dict(
             prio=5000
         ),
         iter_method=args['iter_method']
     ), build_options=dict(
-        iterations=args.get('iterations', 1)
+        iterations=args.get('iterations', 1),
+        strategy=args.get('strategy', misc.BuildStrategy.IGNORE_CONNECTED_DAYS)
     ))
     planner = loader.build_planner(args['planner'])
     automator_ctrl.set_planner(planner)
@@ -233,15 +235,19 @@ if __name__ == '__main__':
 
     # Create schedule with input arguments
     Logger.log('Make schedule', verbosity=LoggerLevel.INFO)
+    strategy = misc.BuildStrategy.IGNORE_CONNECTED_DAYS
+    if config_data.get('strategy'):
+        strategy = misc.BuildStrategy[config_data['strategy']]
     schedule = make_schedule(dict(
         event_data=event_data_dct,
         rule_set=rule_sets,
-        startdate=config_data['startdate'],
-        enddate=config_data['enddate'],
+        schedule_startdate=config_data['schedule_startdate'],
+        schedule_enddate=config_data['schedule_enddate'],
         planner=config_data['planner'],
         iter_method=config_data['iter_method'],
         schedule=sampled_schedule_obj,
-        iterations=common.nvl_int(config_data['iterations'])
+        iterations=common.nvl_int(config_data['iterations']),
+        strategy=strategy
     ))
     if schedule is False:
         Logger.log('Schedule is False', LoggerLevel.FATAL)
