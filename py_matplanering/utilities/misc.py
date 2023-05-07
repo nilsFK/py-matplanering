@@ -18,8 +18,8 @@ from enum import Enum, unique
 
 @unique
 class BuildStrategy(Enum):
-    IGNORE_CONNECTED_DAYS = 0
-    REPLACE_CONNECTED_DAYS = 1
+    IGNORE_PLACED_DAYS = 0
+    REPLACE_PLACED_DAYS = 1
 
 def make_event_quota(startdate: str, enddate: str, quota_template: dict) -> list:
     base_quota = copy.copy(quota_template)

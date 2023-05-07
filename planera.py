@@ -32,7 +32,7 @@ def make_schedule(args: dict) -> dict:
         planning_range=planning_range
     ), build_options=dict(
         iterations=args.get('iterations', 1),
-        strategy=args.get('strategy', misc.BuildStrategy.IGNORE_CONNECTED_DAYS)
+        strategy=args.get('strategy', misc.BuildStrategy.IGNORE_PLACED_DAYS)
     ))
     planner = loader.build_planner(args['planner'])
     automator_ctrl.set_planner(planner)
@@ -239,7 +239,7 @@ if __name__ == '__main__':
 
     # Create schedule with input arguments
     Logger.log('Make schedule', verbosity=LoggerLevel.INFO)
-    strategy = misc.BuildStrategy.IGNORE_CONNECTED_DAYS
+    strategy = misc.BuildStrategy.IGNORE_PLACED_DAYS
     if config_data.get('strategy'):
         strategy = misc.BuildStrategy[config_data['strategy']]
     schedule = make_schedule(dict(

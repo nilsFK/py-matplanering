@@ -45,7 +45,7 @@ class AutomatorController:
         self.__initial_schedule = None
         self.__build_options = dict(
             iterations=1,
-            strategy=misc.BuildStrategy.IGNORE_CONNECTED_DAYS
+            strategy=misc.BuildStrategy.IGNORE_PLACED_DAYS
         )
         self.__build_options.update(build_options)
         if self.__build_options['iterations'] == 0:

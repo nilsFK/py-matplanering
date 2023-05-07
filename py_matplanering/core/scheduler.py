@@ -41,7 +41,7 @@ class Scheduler:
         self.__planner = planner
         self.__sch_options = sch_options
         self.__init_sch = init_sch
-        self.__strategy = misc.BuildStrategy.IGNORE_CONNECTED_DAYS
+        self.__strategy = misc.BuildStrategy.IGNORE_PLACED_DAYS
         self.__pre_processed = False
 
     def set_strategy(self, strategy: misc.BuildStrategy):
@@ -53,11 +53,11 @@ class Scheduler:
         if self.__pre_processed:
             raise SchedulerError('Scheduler has already executed pre_process()')
         if self.__init_sch:
-            if self.__strategy == misc.BuildStrategy.IGNORE_CONNECTED_DAYS:
-                Logger.log('Running build strategy: IGNORE_CONNECTED_DAYS', LoggerLevel.DEBUG)
-                pass # Do nothing, connected days will be ignored
-            elif self.__strategy == misc.BuildStrategy.REPLACE_CONNECTED_DAYS:
-                Logger.log('Running build strategy: REPLACE_CONNECTED_DAYS', LoggerLevel.DEBUG)
+            if self.__strategy == misc.BuildStrategy.IGNORE_PLACED_DAYS:
+                Logger.log('Running build strategy: IGNORE_PLACED_DAYS', LoggerLevel.DEBUG)
+                pass # Do nothing, placed days will be ignored
+            elif self.__strategy == misc.BuildStrategy.REPLACE_PLACED_DAYS:
+                Logger.log('Running build strategy: REPLACE_PLACED_DAYS', LoggerLevel.DEBUG)
                 planning_startdate, planning_enddate = self.__sch_options['planning_range']
                 pr = time_helper.get_date_range(planning_startdate, planning_enddate)
                 cleared_dates = []
