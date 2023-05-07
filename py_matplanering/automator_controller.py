@@ -75,10 +75,9 @@ class AutomatorController:
         # Find all names of global rules
         global_rules = set()
         for rule_data in rule_set:
-            if rule_data['scope'] != 'global':
-                continue
-            for rule_set_data in rule_data['rule_set']:
-                global_rules.add(rule_set_data['name'])
+            if rule_data['scope'] == 'global':
+                for rule_set_data in rule_data['rule_set']:
+                    global_rules.add(rule_set_data['name'])
         for event in event_data['data']:
             event['rules'].extend(list(global_rules))
             event['rules'] = list(set(event['rules']))

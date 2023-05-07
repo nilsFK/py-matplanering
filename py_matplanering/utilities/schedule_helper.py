@@ -17,7 +17,10 @@ def make_schedule(sch_options: dict, prep_events: dict={}):
     return Schedule(sch_options, prep_events)
 
 def load_boundaries(sch_inp: ScheduleInput) -> dict:
-    """ Loads all boundaries as required by the schedule input. """
+    """ Loads all boundaries as required by the schedule input.
+        Raises Exception if an unknown rule type has been provided
+        by the schedule input.
+    """
     rules = []
     for rule_set_meta in sch_inp.get_rule_set():
         for rule_set in rule_set_meta['rule_set']:
@@ -71,6 +74,16 @@ def filter_boundaries(boundaries: dict, apply_filters: dict={}) -> dict:
                 filtered_boundaries[boundary_key] = boundary_obj
     return filtered_boundaries
 
+def filter_events_by_planning_range(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
+    """ Checks if date is within planning range. If so, return all events.
+        Otherwise, return empty list. """
+    if date > sch.get_planning_enddate():
+        return []
+    if date < sch.get_planning_startdate():
+        return []
+    # date is within planning range, return all events
+    return sch_events
+
 def filter_events_by_placing(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
     """ Returns empty list if date has been placed in schedule (sch) """
     placed_events = sch.get_events_by_date(date)
@@ -80,6 +93,8 @@ def filter_events_by_placing(sch: Schedule, date: str, sch_events: List[Schedule
     return sch_events
 
 def filter_events_by_date_period(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
+    """ Events can be restricted to a given period (min, max) where planning is allowed.
+        Checks if date is within the event date period restriction. """
     filtered_sch_events = []
     for event in sch_events:
         event_sdate, event_edate = event.get_startdate(), event.get_enddate()
@@ -169,7 +184,7 @@ def parse_schedule(sch_dct: dict) -> Schedule:
     return schedule
 
 def is_schedule_complete(sch: Schedule) -> bool:
-    """ Are all days planned with event(s) in schedule? """
+    """ Are all days planned with event(s) in schedule range? """
     for date in sch.get_days():
         events = sch.get_events_by_date(date)
         if len(events) == 0:

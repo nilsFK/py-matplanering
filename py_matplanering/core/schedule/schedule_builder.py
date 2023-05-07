@@ -74,6 +74,10 @@ class ScheduleBuilder:
         self.__planner.set_schedule_builder(self)
 
     def set_schedule(self, schedule: Schedule):
+        """ This method should only be called once. Due to setting
+            master schedule and spawning candidates from the master
+            schedule.
+        """
         Logger.log('Setting schedule to: %s' % (schedule), verbosity=LoggerLevel.INFO)
         if schedule is None:
             raise ScheduleBuilderError('Schedule is not allowed to be null')
@@ -178,8 +182,8 @@ class ScheduleBuilder:
 
     def build_quota_iter_plan(self, sch_event_id: int, quota_plan: dict, valid_dates: list) -> list:
         Logger.log('Building quota iteration plan', verbosity=LoggerLevel.INFO)
-        startdate = self.__sch_manager.get_master_schedule().get_startdate()
-        enddate = self.__sch_manager.get_master_schedule().get_enddate()
+        startdate = self.__sch_manager.get_master_schedule().get_schedule_startdate()
+        enddate = self.__sch_manager.get_master_schedule().get_schedule_enddate()
         misc.make_event_quota(startdate, enddate, quota_plan)
         iter_plans = self.__sch_manager.get_master_schedule().add_quota(sch_event_id, min(valid_dates), max(valid_dates), quota_plan)
         return iter_plans
@@ -283,6 +287,7 @@ class ScheduleBuilder:
             for quota_plan in event_meta_info['quotas']:
                 iter_plans = self.build_quota_iter_plan(event_id, quota_plan, event_meta_info['dates'])
                 multi_iter_plans.append(iter_plans)
+            # Construct a schedule_plan from multi_iter_plans.
             for multi_plan in multi_iter_plans:
                 for iter_plan in multi_plan:
                     if len(iter_plan['dates']) == 0:
@@ -298,6 +303,8 @@ class ScheduleBuilder:
                             continue
                         # Not all samples were consumed
                         raise NotImplementedError # TODO: handle
+        # Iterate through the schedule plan and filter plannable events.
+        # Plan those events accordingly.
         planned_days = []
         for date_list, sch_event in schedule_plan:
             ok_events = self._filter_plannable_events(date_list, sch_event)

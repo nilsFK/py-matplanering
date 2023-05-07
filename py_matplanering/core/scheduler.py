@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Core
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.schedule.schedule_request import ScheduleRequest
 from py_matplanering.core.schedule.schedule_builder import ScheduleBuilder
 from py_matplanering.core.schedule.schedule import Schedule
 from py_matplanering.core.planner.planner_base import PlannerBase
+from py_matplanering.core.error import BaseError
 # Handlers
 from py_matplanering.core.handler.impl.setup_handler import (SetupHandler)
 from py_matplanering.core.handler.impl.determinate_decide_candidate_handler import (
@@ -22,6 +24,7 @@ from py_matplanering.core.handler.handler_helper import (
     link_handler_chain,
     run_handler_chain
 )
+# Utilities
 from py_matplanering.utilities import time_helper, misc
 from py_matplanering.utilities.logger import Logger, LoggerLevel
 
@@ -51,10 +54,18 @@ class Scheduler:
             raise SchedulerError('Scheduler has already executed pre_process()')
         if self.__init_sch:
             if self.__strategy == misc.BuildStrategy.IGNORE_CONNECTED_DAYS:
+                Logger.log('Running build strategy: IGNORE_CONNECTED_DAYS', LoggerLevel.DEBUG)
                 pass # Do nothing, connected days will be ignored
             elif self.__strategy == misc.BuildStrategy.REPLACE_CONNECTED_DAYS:
-                # TODO: remove connected days within planning range
-                pass
+                Logger.log('Running build strategy: REPLACE_CONNECTED_DAYS', LoggerLevel.DEBUG)
+                planning_startdate, planning_enddate = self.__sch_options['planning_range']
+                pr = time_helper.get_date_range(planning_startdate, planning_enddate)
+                cleared_dates = []
+                for date in pr:
+                    cleared = self.__init_sch.clear_day(date)
+                    if cleared:
+                        cleared_dates.append(date)
+                Logger.log('Dates with events cleared within planning range: %s' % (cleared_dates), LoggerLevel.DEBUG)
 
     def create_schedule(self, sch_inp: ScheduleInput) -> Schedule:
         handler_order = [

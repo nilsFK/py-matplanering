@@ -20,12 +20,16 @@ def make_schedule(args: dict) -> dict:
     raw_event_data = args['event_data']
     raw_rule_set = args['rule_set']
     sch_range = (args['schedule_startdate'], args['schedule_enddate'])
+    planning_range = None
+    if args.get('planning_startdate') and args.get('planning_enddate'):
+        planning_range = (args['planning_startdate'], args['planning_enddate'])
     automator_ctrl = AutomatorController(sch_range, sch_options=dict(
         include_props=['id', 'name', 'prio'],
         event_defaults=dict(
             prio=5000
         ),
-        iter_method=args['iter_method']
+        iter_method=args['iter_method'],
+        planning_range=planning_range
     ), build_options=dict(
         iterations=args.get('iterations', 1),
         strategy=args.get('strategy', misc.BuildStrategy.IGNORE_CONNECTED_DAYS)
@@ -243,6 +247,8 @@ if __name__ == '__main__':
         rule_set=rule_sets,
         schedule_startdate=config_data['schedule_startdate'],
         schedule_enddate=config_data['schedule_enddate'],
+        planning_startdate=config_data.get('planning_startdate'),
+        planning_enddate=config_data.get('planning_enddate'),
         planner=config_data['planner'],
         iter_method=config_data['iter_method'],
         schedule=sampled_schedule_obj,

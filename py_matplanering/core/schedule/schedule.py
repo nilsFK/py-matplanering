@@ -122,10 +122,17 @@ class ScheduleQuota:
         return ret
 
     def consume_quota_usage(self, sch_event: ScheduleEvent, dates: list, consume: int):
+        """
+            Consumes schedule event quota if it appears in given dates.
+            consume:    amount to be consumed. accepts both positive and negative integers.
+                        zero not allowed.
+                        positive: consumes quota
+                        negative: adds additional amount to quota
+        """
         return self.__consume_quota_usage(sch_event, dates, consume)
 
     def exists(self, event_id: int) -> bool:
-            return self.event_quotas.get(event_id) is not None
+        return self.event_quotas.get(event_id) is not None
 
     def get(self, event_id: int=None) -> Union[dict, list]:
         if event_id is None:
@@ -168,8 +175,8 @@ class Schedule:
             event_defaults=sch_options.get('event_defaults', {}),
             name=sch_options.get('name')
         )
-        dr = get_date_range(self.schedule['schedule_startdate'], self.schedule['schedule_enddate'])
-        for date in dr:
+        sr = get_date_range(self.schedule['schedule_startdate'], self.schedule['schedule_enddate'])
+        for date in sr:
             # self.schedule['days'][date] = { 'events': [] }
             self.schedule['days'][date] = { 'events': prep_events.get(date, []) }
         self.sch_options = sch_options
@@ -213,11 +220,21 @@ class Schedule:
     def get_days(self):
         return self.schedule['days']
 
-    def get_startdate(self) -> str:
+    def get_schedule_startdate(self) -> str:
         return self.schedule['schedule_startdate']
 
-    def get_enddate(self) -> str:
+    def get_schedule_enddate(self) -> str:
         return self.schedule['schedule_enddate']
+
+    def get_planning_startdate(self) -> str:
+        return self.schedule['planning_startdate']
+
+    def get_planning_enddate(self) -> str:
+        return self.schedule['planning_enddate']
+
+    def get_planning_range(self) -> list:
+        pr = get_date_range(self.schedule['planning_startdate'], self.schedule['planning_enddate'])
+        return pr
 
     def get_events_by_date(self, date: str) -> list:
         day = self.get_day(date)
@@ -262,12 +279,32 @@ class Schedule:
         day = self.get_day(date)
         return len(day['events']) > 0
 
+    def clear_day(self, date: str) -> bool:
+        """ Clear day from events.
+            Returns:
+                True if cleared any event(s).
+                False if no event(s) cleared.
+        """
+        day = self.get_day(date)
+        cleared = False
+        for sch_event in day['events']:
+            self.sch_quota.consume_quota_usage(sch_event, [date], consume=-1)
+            day['events'] = []
+            cleared = True
+        return cleared
+
     def __validate_add_event(self, sch_event: ScheduleEvent, date: str) -> tuple:
         if not isinstance(sch_event, ScheduleEvent):
             raise ScheduleError('sch_event must be ScheduleEvent, instead got type %s (%s)' % (type(sch_event), sch_event))
         if self.schedule['use_validation'] is False:
             return (True, 'skipped', None)
-        # TODO: check if date is within planning range => raise ScheduleError
+        # Check for conditions that may raise ScheduleError
+        if date > self.schedule['planning_enddate']:
+            raise ScheduleError('date must not exceed planning enddate. date=%s > planning_enddate=%s' % (date, self.schedule['planning_enddate']))
+        if date < self.schedule['planning_startdate']:
+            raise ScheduleError('planning startdate must not exceed date. date=%s < planning_startdate=%s' % (date, self.schedule['planning_startdate']))
+        # Check for conditions that will not raise ScheduleError, however, may
+        # invalidate the addition
         ok, msg, data = self.sch_quota.validate(sch_event, [date])
         return ok, msg, data
 
@@ -276,7 +313,6 @@ class Schedule:
 
     def add_event(self, dates: list, sch_event: ScheduleEvent):
         """ Adds schedule event to one or more dates. """
-        # print("Add event to dates:", dates)
         if not isinstance(sch_event, ScheduleEvent):
             raise ScheduleError('sch_event must be instance of ScheduleEvent, instead got: %s of type %s' % (repr(sch_event), type(sch_event)))
         if not isinstance(dates, list):
