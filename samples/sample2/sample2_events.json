@@ -11,8 +11,8 @@
             "meta": {
                 "sides": ["rice"]
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": "",
             "rules": ["weekend_only"]
@@ -27,8 +27,8 @@
             "meta": {
                 "sides": ["rice"]
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": null,
             "rules": ["max_once_a_month", "quarter_3", "weekend_only"]

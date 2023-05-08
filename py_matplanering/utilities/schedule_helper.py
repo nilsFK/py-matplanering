@@ -92,18 +92,18 @@ def filter_events_by_placing(sch: Schedule, date: str, sch_events: List[Schedule
     # date has not been placed in sch, return all events
     return sch_events
 
-def filter_events_by_date_period(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
+def filter_events_by_date_interval(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
     """ Events can be restricted to a given period (min, max) where planning is allowed.
         Checks if date is within the event date period restriction. """
     filtered_sch_events = []
     for event in sch_events:
-        event_sdate, event_edate = event.get_startdate(), event.get_enddate()
-        if event_sdate is None or event_edate is None:
+        mindate, maxdate = event.get_mindate(), event.get_maxdate()
+        if mindate is None and maxdate is None:
             filtered_sch_events.append(event)
             continue
-        if date > event_edate:
+        if maxdate and date > maxdate:
             continue
-        if date < event_sdate:
+        if mindate and date < mindate:
             continue
         filtered_sch_events.append(event)
     return filtered_sch_events

@@ -11,8 +11,8 @@
             "meta": {
                 "sides": ["rice"]
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": "",
             "rules": ["weekend_only"]
@@ -27,8 +27,8 @@
             "meta": {
                 "sides": ["rice"]
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": "Take away sushi",
             "rules": ["quarter_3"]
@@ -43,8 +43,8 @@
             "meta": {
                 "sides": ["salad"]
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": null,
             "rules": ["max_once_a_month"]
@@ -59,8 +59,8 @@
             "meta": {
                 "sides": ["rice"]
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": null,
             "rules": ["max_once_a_month", "quarter_3"]
@@ -76,8 +76,8 @@
             "meta": {
                 "sides": [null]
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": null,
             "rules": ["max_once_a_week"]
@@ -92,8 +92,8 @@
             "meta": {
                 "sides": []
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": null,
             "rules": []
@@ -108,8 +108,8 @@
             "meta": {
                 "sides": []
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 0,
             "free_text": null,
             "rules": []
@@ -124,8 +124,8 @@
             "meta": {
                 "sides": ["pico_de_gallo"]
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": "Carnitas recipe made with beer",
             "rules": ["weekend_only"]
@@ -140,8 +140,8 @@
             "meta": {
                 "sides": null
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": null,
             "rules": ["weekend_only"]
@@ -156,8 +156,8 @@
             "meta": {
                 "sides": "rice"
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": null,
             "rules": []
@@ -178,8 +178,8 @@
                     "yule_log_cake"
                 ]
             },
-            "startdate": "2023-01-01",
-            "enddate": "9999-12-31",
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
             "active": 1,
             "free_text": null,
             "rules": ["christmas"],

@@ -32,7 +32,7 @@ class SetupHandler(AbstractHandler):
         filter_functions = [
             schedule_helper.filter_events_by_planning_range,
             schedule_helper.filter_events_by_placing,
-            schedule_helper.filter_events_by_date_period,
+            schedule_helper.filter_events_by_date_interval,
             schedule_helper.filter_events_by_distance,
             schedule_helper.filter_events_by_quota
         ]

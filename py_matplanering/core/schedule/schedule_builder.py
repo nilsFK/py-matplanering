@@ -182,9 +182,9 @@ class ScheduleBuilder:
 
     def build_quota_iter_plan(self, sch_event_id: int, quota_plan: dict, valid_dates: list) -> list:
         Logger.log('Building quota iteration plan', verbosity=LoggerLevel.INFO)
-        startdate = self.__sch_manager.get_master_schedule().get_schedule_startdate()
-        enddate = self.__sch_manager.get_master_schedule().get_schedule_enddate()
-        misc.make_event_quota(startdate, enddate, quota_plan)
+        sch_startdate = self.__sch_manager.get_master_schedule().get_schedule_startdate()
+        sch_enddate = self.__sch_manager.get_master_schedule().get_schedule_enddate()
+        misc.make_event_quota(sch_startdate, sch_enddate, quota_plan)
         iter_plans = self.__sch_manager.get_master_schedule().add_quota(sch_event_id, min(valid_dates), max(valid_dates), quota_plan)
         return iter_plans
 

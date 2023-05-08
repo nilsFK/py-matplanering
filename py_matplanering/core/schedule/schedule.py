@@ -49,11 +49,11 @@ class ScheduleEvent:
     def get_candidates(self) -> list:
         return self.__event['candidates']
 
-    def get_startdate(self) -> str:
-        return self.__event.get('startdate')
+    def get_mindate(self) -> str:
+        return self.__event.get('mindate')
 
-    def get_enddate(self) -> str:
-        return self.__event.get('enddate')
+    def get_maxdate(self) -> str:
+        return self.__event.get('maxdate')
 
     def add_boundary(self, boundary: Any):
         from py_matplanering.core.boundary.boundary_base import BoundaryBase
