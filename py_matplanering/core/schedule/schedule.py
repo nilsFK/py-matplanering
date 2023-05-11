@@ -160,6 +160,10 @@ class Schedule:
     def __init__(self, sch_options: dict, prep_events: dict={}):
         # self.schedule contains any details that should be
         # visible outside the class via as_dict.
+        if 'schedule_interval' not in sch_options:
+            raise ScheduleError('Schedule options is missing required option: schedule_interval. Got options: %s' % (sch_options))
+        if 'planning_interval' not in sch_options:
+            raise ScheduleError('Schedule options is missing required option: planning_interval. Got options: %s' % (sch_options))
         if sch_options['planning_interval']:
             planning_startdate, planning_enddate = sch_options['planning_interval']
         else:
