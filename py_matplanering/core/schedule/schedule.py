@@ -226,15 +226,39 @@ class Schedule:
     def get_schedule_enddate(self) -> str:
         return self.schedule['schedule_enddate']
 
+    def get_schedule_interval(self) -> tuple:
+        return (self.get_schedule_startdate(), self.get_schedule_enddate())
+
+    def get_schedule_range(self) -> list:
+        sr = get_date_range(self.get_schedule_startdate(), self.get_schedule_enddate())
+        return sr
+
     def get_planning_startdate(self) -> str:
         return self.schedule['planning_startdate']
 
     def get_planning_enddate(self) -> str:
         return self.schedule['planning_enddate']
 
+    def get_planning_interval(self) -> tuple:
+        return (self.get_planning_startdate(), self.get_planning_enddate())
+
     def get_planning_range(self) -> list:
-        pr = get_date_range(self.schedule['planning_startdate'], self.schedule['planning_enddate'])
+        pr = get_date_range(self.get_planning_startdate(), self.get_planning_enddate())
         return pr
+
+    def set_planning_interval(self, planning_interval: tuple):
+        """ Runs validation against planning range itself and schedule range.
+            Sets planning range if valid, otherwise raises ScheduleError. """
+        planning_startdate, planning_enddate = planning_interval
+        schedule_startdate, schedule_enddate = self.get_schedule_interval()
+        if planning_startdate > planning_enddate:
+            raise ScheduleError('Planning startdate (%s) may not exceed planning enddate (%s)' % (planning_startdate, planning_enddate))
+        if planning_startdate < schedule_startdate:
+            raise ScheduleError('Schedule startdate (%s) may not exceed planning startdate (%s)' % (schedule_startdate, planning_startdate))
+        if planning_enddate > schedule_enddate:
+            raise ScheduleError('Planning enddate (%s) may not exceed schedule enddate (%s)' % (planning_enddate, schedule_enddate))
+        self.schedule['planning_startdate'] = planning_startdate
+        self.schedule['planning_enddate'] = planning_enddate
 
     def get_events_by_date(self, date: str) -> list:
         day = self.get_day(date)

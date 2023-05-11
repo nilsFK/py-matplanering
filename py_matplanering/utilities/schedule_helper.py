@@ -170,10 +170,15 @@ def count_placed_schedule_days(sch: Schedule) -> int:
 
 def parse_schedule(sch_dct: dict) -> Schedule:
     """ Converts sch_dct into an instance of Schedule
-        Also parses any related sub instances to Schedule,
+        Also parses any related member instances of Schedule,
         such as ScheduleEvent.
     """
     schedule = make_schedule(sch_dct['options'])
+    # set planning interval temporarily to schedule interval,
+    # which allows add_event to be called without raising
+    # exceptions in case planning interval is a subinterval of schedule intervla.
+    planning_interval = schedule.get_planning_interval()
+    schedule.set_planning_interval(schedule.get_schedule_interval())
     for date in schedule.get_days():
         sch_events_list = sch_dct['days'][date]['events']
         for event_dct in sch_events_list:
@@ -181,6 +186,8 @@ def parse_schedule(sch_dct: dict) -> Schedule:
             # Events should by default not contain any candidates.
             sch_event_obj.set_candidates([])
             schedule.add_event([date], sch_event_obj)
+    # restore planning interval
+    schedule.set_planning_interval(planning_interval)
     return schedule
 
 def is_schedule_complete(sch: Schedule) -> bool:
