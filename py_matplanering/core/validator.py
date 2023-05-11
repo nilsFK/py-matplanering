@@ -99,19 +99,19 @@ class Validator:
     @staticmethod
     def __validate_sch_options(sch_options: dict) -> dict:
         rs = dict(ok=False, data=sch_options, msg=None)
-        if sch_options['planning_range']:
-            if not isinstance(sch_options['planning_range'], tuple):
-                return Validator.report_error('Schedule options: planning_range is not instance of tuple. Instead got: %s' % (sch_options['planning_range']))
-            pr_startdate, pr_enddate = sch_options['planning_range']
-            sr_startdate, sr_enddate = sch_options['schedule_range']
-            if pr_startdate < sr_startdate:
-                return Validator.report_error('Schedule options: invalid range dependency. planning range startdate must be higher than schedule range. Instead got: pr_startdate=%s, sr_startdate=%s.' % (pr_startdate, sr_startdate))
-            if pr_enddate > sr_enddate:
-                return Validator.report_error('Schedule options: invalid range dependency. planning range enddate must be lower than schedule range. Instead got: pr_enddate=%s, sr_enddate=%s.' % (pr_enddate, sr_enddate))
-            if pr_startdate > pr_enddate:
-                return Validator.report_error('Schedule options: invalid range dependency. planning range startdate cannot be higher than planning range enddate. Instead got: pr_startdate=%s, pr_enddate=%s.' % (pr_startdate, pr_enddate))
-            if sr_startdate > sr_enddate:
-                return Validator.report_error('Schedule options: invalid range dependency. schedule range startdate cannot be higher than schedule range enddate. Instead got: sr_startdate=%s, sr_enddate=%s.' % (sr_startdate, sr_enddate))
+        if sch_options['planning_interval']:
+            if not isinstance(sch_options['planning_interval'], tuple):
+                return Validator.report_error('Schedule options: planning_interval is not instance of tuple. Instead got: %s' % (sch_options['planning_interval']))
+            planning_startdate, planning_enddate = sch_options['planning_interval']
+            sch_startdate, sch_enddate = sch_options['schedule_interval']
+            if sch_startdate > planning_startdate:
+                return Validator.report_error('Schedule options: invalid interval dependency. schedule interval  startdate cannot exceed planning interval startdate. Got: planning_startdate=%s, sch_startdate=%s.' % (planning_startdate, sch_startdate))
+            if planning_enddate > sch_enddate:
+                return Validator.report_error('Schedule options: invalid interval dependency. planning interval enddate cannot exceed schedule interval enddate. Got: planning_enddate=%s, sch_enddate=%s.' % (planning_enddate, sch_enddate))
+            if planning_startdate > planning_enddate:
+                return Validator.report_error('Schedule options: invalid interval dependency. planning interval startdate cannot exceed planning interval enddate. Got: planning_startdate=%s, planning_enddate=%s.' % (planning_startdate, planning_enddate))
+            if sch_startdate > sch_enddate:
+                return Validator.report_error('Schedule options: invalid interval dependency. schedule interval startdate cannot exceed schedule interval enddate. Got: sch_startdate=%s, sch_enddate=%s.' % (sch_startdate, sch_enddate))
         if rs['ok'] and rs['msg']:
             raise ValidatorError('Validation error: marked as OK but contains msg. Expected msg=None, instead got: %s' % (rs['msg']))
         rs['ok'] = True

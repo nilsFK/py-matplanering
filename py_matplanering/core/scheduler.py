@@ -58,7 +58,7 @@ class Scheduler:
                 pass # Do nothing, placed days will be ignored
             elif self.__strategy == misc.BuildStrategy.REPLACE_PLACED_DAYS:
                 Logger.log('Running build strategy: REPLACE_PLACED_DAYS', LoggerLevel.DEBUG)
-                planning_startdate, planning_enddate = self.__sch_options['planning_range']
+                planning_startdate, planning_enddate = self.__sch_options['planning_interval']
                 pr = time_helper.get_date_range(planning_startdate, planning_enddate)
                 cleared_dates = []
                 for date in pr:

@@ -30,7 +30,7 @@ class SetupHandler(AbstractHandler):
         schedule = self.__planner.plan_init(self.__sch_options, self.__init_sch)
         sch_builder.set_schedule(schedule)
         filter_functions = [
-            schedule_helper.filter_events_by_planning_range,
+            schedule_helper.filter_events_by_planning_interval,
             schedule_helper.filter_events_by_placing,
             schedule_helper.filter_events_by_date_interval,
             schedule_helper.filter_events_by_distance,

@@ -160,14 +160,14 @@ class Schedule:
     def __init__(self, sch_options: dict, prep_events: dict={}):
         # self.schedule contains any details that should be
         # visible outside the class via as_dict.
-        if sch_options['planning_range']:
-            planning_startdate, planning_enddate = sch_options['planning_range']
+        if sch_options['planning_interval']:
+            planning_startdate, planning_enddate = sch_options['planning_interval']
         else:
-            planning_startdate, planning_enddate = sch_options['schedule_range']
+            planning_startdate, planning_enddate = sch_options['schedule_interval']
         self.schedule = dict(
             built_dt=False,
-            schedule_startdate=sch_options['schedule_range'][0],
-            schedule_enddate=sch_options['schedule_range'][1],
+            schedule_startdate=sch_options['schedule_interval'][0],
+            schedule_enddate=sch_options['schedule_interval'][1],
             planning_startdate=planning_startdate,
             planning_enddate=planning_enddate,
             days={},
@@ -247,8 +247,8 @@ class Schedule:
         return pr
 
     def set_planning_interval(self, planning_interval: tuple):
-        """ Runs validation against planning range itself and schedule range.
-            Sets planning range if valid, otherwise raises ScheduleError. """
+        """ Runs validation against planning interval itself and schedule interval.
+            Sets planning interval if valid, otherwise raises ScheduleError. """
         planning_startdate, planning_enddate = planning_interval
         schedule_startdate, schedule_enddate = self.get_schedule_interval()
         if planning_startdate > planning_enddate:

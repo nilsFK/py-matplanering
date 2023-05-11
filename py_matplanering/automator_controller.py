@@ -32,12 +32,12 @@ class AutomatorController:
         The main method of AutomatorController is build() which accepts
         event data and rule set which together produce an instance of a Schedule.
     """
-    def __init__(self, sch_range: tuple, sch_options: dict={}, build_options: dict={}):
+    def __init__(self, sch_interval: tuple, sch_options: dict={}, build_options: dict={}):
         self.__build_error = None
         self.__built_run = False
         self.__sch_options = dict(
-            schedule_range=sch_range,
-            planning_range=None, # None => planning range is same as schedule range
+            schedule_interval=sch_interval,
+            planning_interval=None, # None => planning interval is same as schedule interval
             include_props=None, # None => include all props, [] => exclude all props
             daily_event_limit=None
         )

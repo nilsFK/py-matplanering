@@ -74,14 +74,14 @@ def filter_boundaries(boundaries: dict, apply_filters: dict={}) -> dict:
                 filtered_boundaries[boundary_key] = boundary_obj
     return filtered_boundaries
 
-def filter_events_by_planning_range(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
-    """ Checks if date is within planning range. If so, return all events.
+def filter_events_by_planning_interval(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
+    """ Checks if date is within planning interval. If so, return all events.
         Otherwise, return empty list. """
     if date > sch.get_planning_enddate():
         return []
     if date < sch.get_planning_startdate():
         return []
-    # date is within planning range, return all events
+    # date is within planning interval, return all events
     return sch_events
 
 def filter_events_by_placing(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
