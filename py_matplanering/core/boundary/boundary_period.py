@@ -14,6 +14,7 @@ class BoundaryPeriod(BoundaryBase):
         period_set = set(self._boundary['period'])
         weekdays = set(time_helper.get_named_weekdays(short=True, to_lower=True))
         quarters = set(['q1', 'q2', 'q3', 'q4'])
+        months = set(time_helper.get_named_months(short=True, to_lower=True))
         for date in boundary_context.get_dates():
             date_obj = time_helper.parse_date(date)
             for named_value in self._boundary['period']:
@@ -26,6 +27,11 @@ class BoundaryPeriod(BoundaryBase):
                     quarter_num = time_helper.get_quarter(date_obj)
                     quarter_match = "q%s" % (quarter_num)
                     if quarter_match == named_value:
+                        matching_dates.add(date)
+                        continue
+                elif named_value in months:
+                    mn = time_helper.get_month_name(date_obj, short=True, to_lower=True)
+                    if mn == named_value:
                         matching_dates.add(date)
                         continue
                 else:

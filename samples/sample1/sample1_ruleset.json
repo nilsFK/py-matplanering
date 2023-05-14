@@ -135,6 +135,170 @@
                     ]
                 }
             ]
+        },
+        {
+            "name": "min_once_a_year",
+            "id": 11,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "cap",
+                    "cap": [
+                        {
+                            "min": 1,
+                            "time_unit": "year"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "min_once_a_half_year",
+            "id": 12,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "cap",
+                    "cap": [
+                        {
+                            "min": 1,
+                            "time_unit": "half_year"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "jan",
+            "id": 13,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["jan"]
+                }
+            ]
+        },
+        {
+            "name": "feb",
+            "id": 14,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["feb"]
+                }
+            ]
+        },
+        {
+            "name": "mar",
+            "id": 15,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["mar"]
+                }
+            ]
+        },
+        {
+            "name": "apr",
+            "id": 16,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["apr"]
+                }
+            ]
+        },
+        {
+            "name": "may",
+            "id": 17,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["may"]
+                }
+            ]
+        },
+        {
+            "name": "jun",
+            "id": 18,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["jun"]
+                }
+            ]
+        },
+        {
+            "name": "jul",
+            "id": 19,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["jul"]
+                }
+            ]
+        },
+        {
+            "name": "aug",
+            "id": 20,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["aug"]
+                }
+            ]
+        },
+        {
+            "name": "sep",
+            "id": 21,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["sep"]
+                }
+            ]
+        },
+        {
+            "name": "oct",
+            "id": 22,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["oct"]
+                }
+            ]
+        },
+        {
+            "name": "nov",
+            "id": 23,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["nov"]
+                }
+            ]
+        },
+        {
+            "name": "dec",
+            "id": 24,
+            "rules": [
+                {
+                    "type": "boundary",
+                    "boundary": "period",
+                    "period": ["dec"]
+                }
+            ]
         }
     ]
 }

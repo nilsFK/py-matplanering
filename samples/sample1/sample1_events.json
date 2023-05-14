@@ -164,7 +164,7 @@
         },
         {
             "id": 11,
-            "name": "christmas",
+            "name": "christmas (25/12)",
             "link": null,
             "difficulty": null,
             "type": null,
@@ -184,6 +184,38 @@
             "free_text": null,
             "rules": ["christmas"],
             "prio": 9999
+        },
+        {
+            "id": 12,
+            "name": "jan_only",
+            "link": null,
+            "difficulty": "easy",
+            "type": "beef",
+            "class": null,
+            "meta": {
+                "sides": null
+            },
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
+            "active": 1,
+            "free_text": null,
+            "rules": ["jan"]
+        },
+        {
+            "id": 13,
+            "name": "min_once_a_half_year",
+            "link": null,
+            "difficulty": "medium",
+            "type": "beef",
+            "class": null,
+            "meta": {
+                "sides": null
+            },
+            "mindate": "2023-01-01",
+            "maxdate": "9999-12-31",
+            "active": 1,
+            "free_text": null,
+            "rules": ["min_once_a_half_year"]
         }
     ]
 }

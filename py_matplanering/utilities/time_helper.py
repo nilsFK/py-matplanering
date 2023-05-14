@@ -4,9 +4,10 @@
 time_helper.py is common low-level functionality
 and should not import anything except for
 built in packages.
+All dates are inclusive.
 """
 import ntpath
-import time, datetime, math
+import time, datetime, math, calendar
 
 from typing import (Any)
 
@@ -72,6 +73,8 @@ def get_monthly_dates(start_date: str, end_date: str) -> list:
 # get_date_range("2017-01-01", "2017-12-01") would produce
 # 2017-01-01, 2017-01-02, 2017-01-03, ..., 2017-12-01
 def get_date_range(start_date: str, end_date: str) -> list:
+    if start_date > end_date:
+        raise Exception('start_date=%s exceeds end_date=%s' % (start_date, end_date))
     dates = []
     next_date = start_date
     while next_date <= end_date:
@@ -80,7 +83,7 @@ def get_date_range(start_date: str, end_date: str) -> list:
     return dates
 
 # Gets week range between a date interval
-# get_week_range("2017-01-01", "2017-12-01") would produce
+# get_week_range("2017-01-01", "2017-12-01") would produce:
 # [ ['2017-01-01'], ['2017-01-02', '2017-01-03', ..., '2017-01-08'], ['2017-01-09', ...] ]
 def get_week_range(start_date: str, end_date: str) -> list:
     week_range = []
@@ -100,6 +103,31 @@ def get_week_range(start_date: str, end_date: str) -> list:
         # adds remaining buffer
         week_range.append(week_buffer)
     return week_range
+
+# Gets year range between a date interval
+# get_year_range("2020-01-01", "2023-01-01") would produce list of ints:
+# [2020, 2021, 2022, 2023]
+def get_year_range(start_date: str, end_date: str) -> list:
+    if start_date > end_date:
+        raise Exception('start_date=%s exceeds end_date=%s' % (start_date, end_date))
+    year_range = []
+    start_year = int(start_date[0:4])
+    end_year = int(end_date[0:4])
+    cur_year = start_year
+    while cur_year <= end_year:
+        year_range.append(cur_year)
+        cur_year += 1
+    return year_range
+
+def get_days_in_year(year=datetime.datetime.now().year) -> int:
+    return 365 + calendar.isleap(year)
+
+def get_nth_day_of_year(year: int, n: int) -> str:
+    if n < 1 or n > 365:
+        raise ValueError("n must be between 1 and 365 (inclusive)")
+    first_day = datetime.datetime(year, 1, 1)
+    nth_day = first_day + datetime.timedelta(days=n-1)
+    return nth_day.strftime('%Y-%m-%d')
 
 def get_weekday_name(date: Any, short: bool=False, to_lower: bool=False) -> str:
     if isinstance(date, str):
@@ -134,6 +162,38 @@ def get_named_weekdays(short: bool=False, to_lower: bool=False) -> list:
     if short:
         nwd = [row[0:3] for row in nwd]
     return nwd
+
+def get_month_name(date: Any, short: bool=False, to_lower: bool=False) -> str:
+    if isinstance(date, str):
+        date = parse_date(date)
+    named_month = date.strftime('%B')
+    if short:
+        named_month = named_month[:3]
+    if to_lower:
+        return named_month.casefold()
+    return named_month
+
+def get_named_months(short: bool=False, to_lower: bool=False) -> list:
+    nm = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
+    ]
+    assert len(nm) == 12
+    if to_lower:
+        nm = [row.casefold() for row in nm]
+    if short:
+        nm = [row[0:3] for row in nm]
+    return nm
 
 def get_quarter(date=None):
     """ returns a number between 1-4 representing quarter of date """

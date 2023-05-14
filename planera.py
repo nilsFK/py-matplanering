@@ -157,6 +157,11 @@ if __name__ == '__main__':
         metavar='N',
         type=str,
         help='Path to config file containing further required schedule data')
+    argparser.add_argument('--logger',
+        metavar='',
+        type=str,
+        choices=['DEBUG', 'INFO', 'FATAL', 'OFF'],
+        help="Logger option. Accepts one of the following strings: 'DEBUG', 'INFO', 'FATAL', 'OFF'.")
     args = argparser.parse_args()
 
     config_data = readConfig(args.config_path, 'Config')
@@ -166,24 +171,43 @@ if __name__ == '__main__':
         Logger.log('Read global config', LoggerLevel.INFO)
     except Exception:
         global_config_data = None
+
+    # Activate | Deactivate logger
+    # ============================
     max_verbosity = None
-    if global_config_data:
+    Logger.deactivate() # default
+    if args.logger is not None and args.logger != 'OFF':
+        Logger.activate()
+        max_verbosity = LoggerLevel[args.logger]
+    elif args.logger is None and global_config_data:
         logger_level = global_config_data['logger_level']
         if global_config_data['logger'] == 'on':
             Logger.activate()
-        max_verbosity = LoggerLevel[logger_level]
+            max_verbosity = LoggerLevel[logger_level]
 
     Logger.log('initializing', verbosity=LoggerLevel.INFO)
+
     # Get event data
+    # ==============
     Logger.log('fetch event data', verbosity=LoggerLevel.INFO)
     event_data_str = Path(config_data['event_data_path']).read_text()
     if len(event_data_str) == 0:
         raise AppError("event data source file is empty. Expected: JSON formatted data")
     event_data_dct = json.loads(event_data_str)
     del event_data_str
+    if config_data.get('filter_event_ids'):
+        config_data['filter_event_ids'] = [int(id_) for id_ in config_data.get('filter_event_ids').split(',')]
+        tmp_event_data_lst = []
+        for event_row in event_data_dct['data']:
+            if event_row['id'] not in config_data['filter_event_ids']:
+                continue
+            tmp_event_data_lst.append(event_row)
+        event_data_dct['data'] = tmp_event_data_lst
+        del tmp_event_data_lst
     # print("Event data:", event_data_dct)
 
     # Read schedule output file
+    # =========================
     sampled_schedule_obj = None
     if config_data.get('init_schedule_path'):
         Logger.log('Initializing schedule from given path: %s' % (config_data['init_schedule_path']), verbosity=LoggerLevel.INFO)
@@ -212,6 +236,7 @@ if __name__ == '__main__':
             Logger.log('Reading pre-defined schedule with %s events' % (schedule_helper.count_placed_schedule_days(sampled_schedule_obj)), LoggerLevel.INFO)
 
     # Parse and get rule set file paths
+    # =================================
     Logger.log('fetch rule set data', verbosity=LoggerLevel.INFO)
     paths_str = config_data['rule_set_path']
     paths = paths_str.split(",")
@@ -228,6 +253,7 @@ if __name__ == '__main__':
     del tmp_paths
 
     # Load files into rule sets
+    # =========================
     rule_sets = []
     for path in paths:
         Logger.log('Reading path: %s' % (path), verbosity=LoggerLevel.DEBUG)
@@ -238,6 +264,7 @@ if __name__ == '__main__':
         rule_sets.append(rule_set_dct)
 
     # Create schedule with input arguments
+    # ====================================
     Logger.log('Make schedule', verbosity=LoggerLevel.INFO)
     strategy = misc.BuildStrategy.IGNORE_PLACED_DAYS
     if config_data.get('strategy'):
