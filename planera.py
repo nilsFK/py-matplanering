@@ -4,8 +4,9 @@ import argparse, json, copy, random
 from pathlib import Path
 
 from py_matplanering.automator_controller import AutomatorController
-from py_matplanering.core.schedule.schedule import Schedule
+from py_matplanering.core.schedule.schedule import Schedule, ScheduleEvent
 from py_matplanering.core.error import AppError
+from py_matplanering.core.context import ScheduleEventFilterContext
 
 from py_matplanering.utilities.common import (
     as_obj, as_dict, underscore_to_camelcase, camelcase_to_underscore
@@ -15,6 +16,8 @@ from py_matplanering.utilities import time_helper, loader, schedule_helper, comm
 from py_matplanering.utilities.logger import Logger, LoggerLevel
 
 from tabulate import tabulate
+
+from typing import List
 
 def make_schedule(args: dict) -> dict:
     raw_event_data = args['event_data']
@@ -36,6 +39,17 @@ def make_schedule(args: dict) -> dict:
     ))
     planner = loader.build_planner(args['planner'])
     automator_ctrl.set_planner(planner)
+
+    # Sanity check: create a custom event filter which returns all events to ensure
+    # that custom schedule events works as intended
+    def my_event_filter(ctx: ScheduleEventFilterContext) -> List[ScheduleEvent]:
+        assert isinstance(ctx.get_date(), str)
+        assert isinstance(ctx.get_schedule(), Schedule)
+        return ctx.get_schedule_events()
+    automator_ctrl.add_schedule_event_filter('my_event_filter', my_event_filter)
+    # Add another to ensure multiple schedule event filters is OK.
+    automator_ctrl.add_schedule_event_filter('my_event_filter_2', my_event_filter)
+
     if args.get('schedule'):
         automator_ctrl.init_schedule(args['schedule'])
     schedule = automator_ctrl.build(raw_event_data, raw_rule_set)

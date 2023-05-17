@@ -59,3 +59,28 @@ class BoundaryContext(Context):
 
     def get_dates(self) -> List[str]:
         return self._context['dates']
+
+class ScheduleEventFilterContext(Context):
+    """ A context which holds data required to run schedule event filter functions.
+    """
+    def __init__(self, sch: Schedule, date: str, sch_events: List[ScheduleEvent]):
+        if not isinstance(sch, Schedule):
+            raise ContextError('Unexpected sch is not a Schedule. Instead got: %s' % (sch))
+        if not isinstance(sch_events, list):
+            raise ContextError('Unexpected sch_events is not List[ScheduleEvent]. Instead got: %s' % (sch_events))
+        if not isinstance(date, str):
+            raise ContextError('Unexpected date is not a str. Instead got: ' % (date))
+        self._set_context(dict(
+            sch=sch,
+            date=date,
+            sch_events=sch_events
+        ))
+
+    def get_schedule_events(self) -> List[ScheduleEvent]:
+        return self._context['sch_events']
+
+    def get_date(self) -> str:
+        return self._context['date']
+
+    def get_schedule(self) -> Schedule:
+        return self._context['sch']

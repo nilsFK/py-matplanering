@@ -43,9 +43,13 @@ class Scheduler:
         self.__init_sch = init_sch
         self.__strategy = misc.BuildStrategy.IGNORE_PLACED_DAYS
         self.__pre_processed = False
+        self.__sch_event_filters = []
 
     def set_strategy(self, strategy: misc.BuildStrategy):
         self.__strategy = strategy
+
+    def set_schedule_event_filters(self, sch_event_filters: list):
+        self.__sch_event_filters = sch_event_filters
 
     def pre_process(self):
         """ Any kind of pre processing of planner, schedule options or init schedule
@@ -69,7 +73,7 @@ class Scheduler:
 
     def create_schedule(self, sch_inp: ScheduleInput) -> Schedule:
         handler_order = [
-            SetupHandler().with_input(self.__planner, sch_inp, self.__sch_options, self.__init_sch),
+            SetupHandler().with_input(self.__planner, sch_inp, self.__sch_options, self.__init_sch, self.__sch_event_filters),
             DeterminateDecideCandidateHandler(),
             IndeterminatePlanningHandler(),
             DeterminatePlanningHandler(),

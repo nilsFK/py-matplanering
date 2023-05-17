@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.schedule.schedule import Schedule, ScheduleEvent
-from py_matplanering.core.context import BoundaryContext
+from py_matplanering.core.context import ScheduleEventFilterContext
 
 from py_matplanering.utilities import (common, loader)
 
@@ -74,66 +74,11 @@ def filter_boundaries(boundaries: dict, apply_filters: dict={}) -> dict:
                 filtered_boundaries[boundary_key] = boundary_obj
     return filtered_boundaries
 
-def filter_events_by_planning_interval(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
-    """ Checks if date is within planning interval. If so, return all events.
-        Otherwise, return empty list. """
-    if date > sch.get_planning_enddate():
-        return []
-    if date < sch.get_planning_startdate():
-        return []
-    # date is within planning interval, return all events
-    return sch_events
-
-def filter_events_by_placing(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
-    """ Returns empty list if date has been placed in schedule (sch) """
-    placed_events = sch.get_events_by_date(date)
-    if len(placed_events) > 0:
-        return []
-    # date has not been placed in sch, return all events
-    return sch_events
-
-def filter_events_by_date_interval(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
-    """ Events can be restricted to a given period (min, max) where planning is allowed.
-        Checks if date is within the event date period restriction. """
-    filtered_sch_events = []
-    for event in sch_events:
-        mindate, maxdate = event.get_mindate(), event.get_maxdate()
-        if mindate is None and maxdate is None:
-            filtered_sch_events.append(event)
-            continue
-        if maxdate and date > maxdate:
-            continue
-        if mindate and date < mindate:
-            continue
-        filtered_sch_events.append(event)
-    return filtered_sch_events
-
-def filter_events_by_quota(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
-    filtered_sch_events = []
-    for event in sch_events:
-        ok, *_ = sch.validate_quota(event, date)
-        if ok:
-            filtered_sch_events.append(event)
-    return filtered_sch_events
-
-def filter_events_by_distance(sch: Schedule, date: str, sch_events: List[ScheduleEvent]) -> List[ScheduleEvent]:
-    filtered_sch_events = []
-    for sch_event in sch_events:
-        event_ok = True
-        for boundary in sch_event.get_boundaries():
-            if boundary.get_boundary_class() == 'distance':
-                ok_events = boundary.filter_eligible_events(BoundaryContext(sch, [sch_event], [date]))
-                if len(ok_events) == 0:
-                    event_ok = False
-                    break
-        if event_ok:
-            filtered_sch_events.append(sch_event)
-    return filtered_sch_events
-
 def run_filter_events_function(sch: Schedule, date: str, sch_events: List[ScheduleEvent], filter_fn: Callable) -> List[ScheduleEvent]:
     if not isinstance(sch, Schedule):
         raise Exception('sch is not instance of Schedule, instead got: %s' % (sch))
-    filtered_sch_events = filter_fn(sch, date, sch_events)
+    filter_ctx = ScheduleEventFilterContext(sch, date, sch_events)
+    filtered_sch_events = filter_fn(filter_ctx)
     if not isinstance(filtered_sch_events, list):
         raise Exception('Applied filter function unexpectedly returned non list: %s' % (filtered_sch_events))
     return filtered_sch_events

@@ -3,6 +3,7 @@
 
 from py_matplanering.core.schedule.schedule import Schedule
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
+from py_matplanering.core.schedule.schedule_event_filter import CustomScheduleEventFilter
 from py_matplanering.core.validator import Validator
 from py_matplanering.core.scheduler import Scheduler
 from py_matplanering.core.planner.planner_base import PlannerBase
@@ -12,7 +13,7 @@ from py_matplanering.utilities.logger import Logger, LoggerLevel
 from py_matplanering.utilities import schedule_helper
 from py_matplanering.utilities import misc
 
-from typing import Any
+from typing import Any, Callable
 
 class AutomatorControllerError(BaseError):
     def __init__(self, message, capture_data = {}):
@@ -24,12 +25,12 @@ class AutomatorControllerError(BaseError):
 
 class AutomatorController:
     """
-        AutomatorController is the starting point for the shceduling process
+        AutomatorController is the starting point for the scheduling process
         and it delegates tasks to other classes.
         It does not implement any business logic, it mainly
-        setups the different parts needed for scheduling, validation,
+        sets up the different parts needed for scheduling, validation,
         and so on.
-        The main method of AutomatorController is build() which accepts
+        The main client method of AutomatorController is build() which accepts
         event data and rule set which together produce an instance of a Schedule.
     """
     def __init__(self, sch_interval: tuple, sch_options: dict={}, build_options: dict={}):
@@ -43,6 +44,7 @@ class AutomatorController:
         )
         self.__sch_options.update(sch_options)
         self.__initial_schedule = None
+        self.__sch_event_filters = []
         self.__build_options = dict(
             iterations=1,
             strategy=misc.BuildStrategy.IGNORE_PLACED_DAYS
@@ -69,10 +71,19 @@ class AutomatorController:
     def set_build_option(self, build_key: str, build_val: Any):
         self.__build_options[build_key] = build_val
 
+    def add_schedule_event_filter(self, filter_name: str, filter_fn: Callable):
+        """ Adds a custom filter schedule event function with given name.
+            Custom schedule event functions are executed
+            after default schedule event functions. """
+        sch_event_filter = CustomScheduleEventFilter(filter_name, filter_fn)
+        self.__sch_event_filters.append(sch_event_filter)
+
     def build(self, event_data: dict, rule_set: list) -> Any:
         self.__built_run = True
+
         # Inject global rules into event data.
         # Find all names of global rules
+        # ====================================
         global_rules = set()
         for rule_data in rule_set:
             if rule_data['scope'] == 'global':
@@ -81,6 +92,9 @@ class AutomatorController:
         for event in event_data['data']:
             event['rules'].extend(list(global_rules))
             event['rules'] = list(set(event['rules']))
+
+        # Validation
+        # ==========
         inp = ScheduleInput(event_data, rule_set, self.__initial_schedule)
         validator = Validator()
         is_valid, validation_rs, validation_msg = validator.pre_validate(inp, self.__sch_options)
@@ -92,11 +106,17 @@ class AutomatorController:
             )
             assert self.__build_error['msg'] is not None
             return False
+
+        # Create and configurate scheduler
+        # ================================
         Logger.log('Create Scheduler', verbosity=LoggerLevel.DEBUG)
         scheduler = Scheduler(self.__planner, self.__sch_options, self.__initial_schedule)
         scheduler.set_strategy(self.__build_options['strategy'])
+        scheduler.set_schedule_event_filters(self.__sch_event_filters)
         scheduler.pre_process()
 
+        # Build Schedule instance
+        # =======================
         Logger.log('Create Schedule', verbosity=LoggerLevel.DEBUG)
         schedule = None
         for idx in range(self.__build_options['iterations']):
@@ -107,7 +127,7 @@ class AutomatorController:
             schedule = scheduler.create_schedule(inp)
             is_valid, validation_rs, validation_msg = validator.post_validate(schedule)
             if not is_valid:
-                Logger.log('Invalid Schedule due to post_validate', LoggerLevel.FATAL)
+                Logger.log('Invalid Schedule due to post_validate in iteration %s' % (idx+1), LoggerLevel.FATAL)
                 self.__build_error = dict(
                     validation_data=validation_rs,
                     msg=validation_msg
