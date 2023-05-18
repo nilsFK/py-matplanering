@@ -52,14 +52,14 @@ class PlannerDefault(PlannerBase):
         # ==================================================================
         selected_event = select_event('planned', reverse=False) # lowest planned first
         if selected_event:
-            selected_event.add_metadata('method', 'planned_len')
+            selected_event.add_metadata('method', 'planned_len', scope='system')
             return selected_event
 
         # Step 3: If no such events: check which event has the highest prio. Select that event.
         # =====================================================================================
         selected_event = select_event('prio', reverse=True) # highest first
         if selected_event:
-            selected_event.add_metadata('method', 'prio_len')
+            selected_event.add_metadata('method', 'prio_len', scope='system')
             return selected_event
 
         # Step 4: Last resort. Select a random event.

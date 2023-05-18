@@ -32,6 +32,7 @@ class ScheduleEvent:
             raise ScheduleError('ScheduleEvent may only be instance of dict, instead got: %s' % type(event_dct))
         self.__event = event_dct
         self.__boundaries = []
+        # meta is a nested dict in dict
         self.__meta = {}
 
     def get_name(self):
@@ -64,16 +65,18 @@ class ScheduleEvent:
     def get_boundaries(self) -> list:
         return self.__boundaries
 
-    def add_metadata(self, key: str, value: Any):
-        if key not in self.__meta:
-            self.__meta[key] = set()
-        self.__meta[key].add(value)
+    def add_metadata(self, key: str, value: Any, scope: str=None):
+        if scope not in self.__meta:
+            self.__meta[scope] = dict()
+        if key not in self.__meta[scope]:
+            self.__meta[scope][key] = set()
+        self.__meta[scope][key].add(value)
 
-    def get_metadata(self, key: str=None, default=None) -> Any:
+    def get_metadata(self, key: str=None, default=None, scope: str=None) -> Any:
         if key is None:
-            return self.__meta
-        if key in self.__meta:
-            return self.__meta[key]
+            return self.__meta[scope]
+        if key in self.__meta[scope]:
+            return self.__meta[scope][key]
         return [default]
 
     def as_dict(self, short: bool=False):

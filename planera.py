@@ -45,6 +45,7 @@ def make_schedule(args: dict) -> dict:
     def my_event_filter(ctx: ScheduleEventFilterContext) -> List[ScheduleEvent]:
         assert isinstance(ctx.get_date(), str)
         assert isinstance(ctx.get_schedule(), Schedule)
+        assert isinstance(ctx.get_schedule_events(), list)
         return ctx.get_schedule_events()
     automator_ctrl.add_schedule_event_filter('my_event_filter', my_event_filter)
     # Add another to ensure multiple schedule event filters is OK.
@@ -124,7 +125,7 @@ def make_date_table(sch: Schedule) -> tuple:
             for boundary in boundaries:
                 printable_boundaries.append(type(boundary).__name__)
             row2.append(", ".join(printable_boundaries))
-            method = sch_event.get_metadata('method', 'unknown')
+            method = sch_event.get_metadata('method', 'unknown', scope='system')
             method_str = ''
             for item in method:
                 method_str += "{item}\n".format(**{
