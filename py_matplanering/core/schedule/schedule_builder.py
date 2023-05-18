@@ -310,7 +310,7 @@ class ScheduleBuilder:
             ok_events = self._filter_plannable_events(date_list, sch_event)
             if len(ok_events) > 0:
                 sch_event = self.__planner.plan_single_event(date_list, sch_event)
-                sch_event.add_metadata('method', 'indeterminate', scope='system')
+                sch_event.add_metadata('method', 'indeterminate', scope='__system')
                 self.__sch_manager.add_master_event(date_list, sch_event, remove_from_minions=True)
                 planned_days.extend(date_list)
         planned_days = list(set(planned_days))
@@ -335,7 +335,7 @@ class ScheduleBuilder:
             if selected_event:
                 if not isinstance(selected_event, ScheduleEvent):
                     raise ScheduleBuilderError('Expected event selected by planner to be instance of ScheduleEvent, instead got: %s' % (selected_event))
-                selected_event.add_metadata('method', method, scope='system')
+                selected_event.add_metadata('method', method, scope='__system')
                 self.__sch_manager.add_master_event([next_date], selected_event, remove_from_minions=False)
         self.__build_status = 'plan_ok'
 
@@ -359,7 +359,7 @@ class ScheduleBuilder:
             if selected_event:
                 if not isinstance(selected_event, ScheduleEvent):
                     raise ScheduleBuilderError('Expected event selected by planner to be instance of ScheduleEvent, instead got: %s' % (selected_event))
-                selected_event.add_metadata('method', 'conflict_resolution', scope='system')
+                selected_event.add_metadata('method', 'conflict_resolution', scope='__system')
                 self.__sch_manager.add_master_event([next_date], selected_event, remove_from_minions=False)
             else:
                 Logger.log('No selected event', verbosity=LoggerLevel.INFO)

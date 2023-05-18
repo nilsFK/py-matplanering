@@ -125,7 +125,7 @@ def make_date_table(sch: Schedule) -> tuple:
             for boundary in boundaries:
                 printable_boundaries.append(type(boundary).__name__)
             row2.append(", ".join(printable_boundaries))
-            method = sch_event.get_metadata('method', 'unknown', scope='system')
+            method = sch_event.get_metadata('method', 'unknown', scope='__system')
             method_str = ''
             for item in method:
                 method_str += "{item}\n".format(**{

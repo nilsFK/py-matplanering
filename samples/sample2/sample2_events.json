@@ -1,5 +1,5 @@
 {
-    "name": "Sample 1",
+    "name": "Sample 2",
     "data": [
         {
             "id": 1,
@@ -9,7 +9,9 @@
             "type": "beef",
             "class": null,
             "meta": {
-                "sides": ["rice"]
+                "scope": null,
+                "key": "sides",
+                "value": ["rice"]
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -25,7 +27,9 @@
             "type": "beef",
             "class": null,
             "meta": {
-                "sides": ["rice"]
+                "scope": null,
+                "key": "sides",
+                "value": ["rice"]
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",

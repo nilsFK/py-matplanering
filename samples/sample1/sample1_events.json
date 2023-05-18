@@ -9,7 +9,9 @@
             "type": "beef",
             "class": null,
             "meta": {
-                "sides": ["rice"]
+                "scope": null,
+                "key": "sides",
+                "value": "rice"
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -25,7 +27,9 @@
             "type": "fish",
             "class": "takeaway",
             "meta": {
-                "sides": ["rice"]
+                "scope": null,
+                "key": "sides",
+                "value": "rice"
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -41,7 +45,9 @@
             "type": "beef",
             "class": null,
             "meta": {
-                "sides": ["salad"]
+                "scope": null,
+                "key": "sides",
+                "value": "salad"
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -57,7 +63,9 @@
             "type": "beef",
             "class": null,
             "meta": {
-                "sides": ["rice"]
+                "scope": null,
+                "key": "sides",
+                "value": ["rice"]
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -74,7 +82,9 @@
             "type": null,
             "class": null,
             "meta": {
-                "sides": [null]
+                "scope": null,
+                "key": "sides",
+                "value": null
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -90,7 +100,9 @@
             "type": "hybrid",
             "class": "takeaway",
             "meta": {
-                "sides": []
+                "scope": null,
+                "key": "sides",
+                "value": []
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -106,7 +118,9 @@
             "type": null,
             "class": null,
             "meta": {
-                "sides": []
+                "scope": null,
+                "key": "sides",
+                "value": []
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -122,7 +136,9 @@
             "type": "pork",
             "class": "tacos",
             "meta": {
-                "sides": ["pico_de_gallo"]
+                "scope": null,
+                "key": "sides",
+                "value": "pico_de_gallo"
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -138,7 +154,9 @@
             "type": "beef",
             "class": null,
             "meta": {
-                "sides": null
+                "scope": null,
+                "key": "sides",
+                "value": null
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -154,7 +172,9 @@
             "type": "pork",
             "class": null,
             "meta": {
-                "sides": "rice"
+                "scope": null,
+                "key": "sides",
+                "value": "rice"
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -170,7 +190,9 @@
             "type": null,
             "class": "holiday_dinner",
             "meta": {
-                "sides": [
+                "scope": null,
+                "key": "sides",
+                "value": [
                     "christmas_pudding",
                     "mince_pies",
                     "christmas_cake",
@@ -193,7 +215,9 @@
             "type": "beef",
             "class": null,
             "meta": {
-                "sides": null
+                "scope": null,
+                "key": "sides",
+                "value": null
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",
@@ -209,7 +233,9 @@
             "type": "beef",
             "class": null,
             "meta": {
-                "sides": null
+                "scope": null,
+                "key": "sides",
+                "value": null
             },
             "mindate": "2023-01-01",
             "maxdate": "9999-12-31",

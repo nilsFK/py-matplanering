@@ -34,6 +34,14 @@ class ScheduleEvent:
         self.__boundaries = []
         # meta is a nested dict in dict
         self.__meta = {}
+        if 'meta' in self.__event:
+            # move event_dct['meta'] into self.__meta
+            scope = self.__event['meta']['scope']
+            key = self.__event['meta']['key']
+            value = self.__event['meta']['value']
+            self.__meta[scope] = dict()
+            self.__meta[scope][key] = value
+            del self.__event['meta']
 
     def get_name(self):
         return self.__event['name']
