@@ -5,7 +5,7 @@ from py_matplanering.core.planner.planner_base import PlannerBase
 from py_matplanering.core.schedule.schedule import Schedule, ScheduleEvent
 from py_matplanering.core.schedule.schedule_input import ScheduleInput
 from py_matplanering.core.schedule.schedule_manager import ScheduleManager
-from py_matplanering.core.context import BoundaryContext
+from py_matplanering.core.context import BoundaryContext, ScheduleEventFilterContext
 from py_matplanering.core.error import BaseError
 
 from py_matplanering.utilities import (
@@ -232,21 +232,34 @@ class ScheduleBuilder:
                     event_dates.append(date)
         return event_dates
 
-    def register_filter_event_function(self, filter_fn: Callable):
+    def register_filter_event_function(self, filter_fn: Callable, test_run: False=bool):
         """ Registers a filter event function.
         It mainly adds the filter function to the builder.
-        But it also runs it through a test run to make sure that the
-        filter function works as intended.
+        test_run: runs the filter function through a test run to ensure that the filter
+        function works as intended. May cause AssertionError if it fails.
         """
         if not isinstance(filter_fn, Callable):
             raise ScheduleBuilderError("Attempting to register non callable filter function: %s" % (filter_fn))
-        # Attempt to call filter_fn to make sure it works as intended before registering
-        tmp_sch = self.__sch_manager.spawn_minion_schedule('tmp_sch')
-        tmp_sch.add_date('9999-12-31')
-        ok_events = schedule_helper.run_filter_events_function(tmp_sch, '9999-12-31', [], filter_fn)
-        assert isinstance(ok_events, list) and len(ok_events) == 0
+
+        # Validate the parameter signature of the filter_fn.
+        param_sign_dct = common.get_parameter_signature(filter_fn)
+        if len(param_sign_dct) != 1:
+            raise ScheduleBuilderError('Expected filter function `%s` parameter signature to contain one and only one parameter (ctx: ScheduleEventFilterContext). Instead got parameter signature: %s (expected parameter length=1, instead got parameter length=%s)' % (repr(filter_fn), param_sign_dct, len(param_sign_dct)))
+        ctx_param = list(param_sign_dct.keys()).pop() # suggested param name is 'ctx' but may be renamed by client
+        if param_sign_dct[ctx_param]['type'] != ScheduleEventFilterContext:
+            raise ScheduleBuilderError('Expected type of input argument `%s` in filter function `%s` to be: %s. Instead got: %s' % (ctx_param, repr(filter_fn), ScheduleEventFilterContext, param_sign_dct[ctx_param]['type']))
+
+        # Optional test run
+        if test_run:
+            # Attempt to call filter_fn to make sure it works as intended before registering
+            tmp_sch = self.__sch_manager.spawn_minion_schedule('tmp_sch')
+            tmp_sch.add_date('9999-12-31')
+            ok_events = schedule_helper.run_filter_events_function(tmp_sch, '9999-12-31', [], filter_fn)
+            assert isinstance(ok_events, list) and len(ok_events) == 0
+            self.__sch_manager.despawn_minion_schedule('tmp_sch')
+
+        # Finally: register event
         self.__filter_event_functions.append(filter_fn)
-        self.__sch_manager.despawn_minion_schedule('tmp_sch')
 
     def _filter_plannable_events(self, date_list: Union[str, list], sch_events: Union[ScheduleEvent, List[ScheduleEvent]]) -> List[ScheduleEvent]:
         Logger.log('Filter plannable events from date list: %s and schedule events: %s' % (date_list, sch_events), LoggerLevel.DEBUG)

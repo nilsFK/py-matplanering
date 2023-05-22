@@ -14,8 +14,9 @@ import re
 import sys
 import decimal
 import copy
+import inspect
 
-from typing import Any, Callable
+from typing import Any, Callable, Dict, Type, Union
 
 class Struct:
     def __init__(self, **entries):
@@ -132,3 +133,19 @@ class Consumable():
         return self.consumption_quota - self.consumed_count == 0
     # def __len__(self):
         # return len(self.consumable)
+
+def get_parameter_signature(func: Callable[..., Any]) -> Dict[str, Dict[str, Union[str, Type[Any]]]]:
+    signature = inspect.signature(func)
+    parameters = signature.parameters
+    signature_dict = {}
+
+    for name, param in parameters.items():
+        param_info = {
+            'name': name,
+            'type': param.annotation,
+            'default': param.default,
+        }
+        signature_dict[name] = param_info
+
+    return signature_dict
+

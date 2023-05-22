@@ -32,23 +32,28 @@ class SetupHandler(AbstractHandler):
         sch_builder.set_schedule_input(self.__sch_inp)
         schedule = self.__planner.plan_init(self.__sch_options, self.__init_sch)
         sch_builder.set_schedule(schedule)
+
         # ordered filter functions by least time consuming in terms of complexity
         # to most time consuming.
         filter_objects = [
-            schedule_event_filter.PlanningIntervalScheduleEventFilter(),
-            schedule_event_filter.PlacingScheduleEventFilter(),
-            schedule_event_filter.DateIntervalScheduleEventFilter(),
-            schedule_event_filter.DistanceScheduleEventFilter(),
-            schedule_event_filter.QuotaScheduleEventFilter()
+            (schedule_event_filter.PlanningIntervalScheduleEventFilter(), False),
+            (schedule_event_filter.PlacingScheduleEventFilter(), False),
+            (schedule_event_filter.DateIntervalScheduleEventFilter(), False),
+            (schedule_event_filter.DistanceScheduleEventFilter(), False),
+            (schedule_event_filter.QuotaScheduleEventFilter(), False)
         ]
+
         # Inject custom schedule event filters into filter_objects
         if len(self.__custom_sch_event_filters) > 0:
-            filter_objects.extend(self.__custom_sch_event_filters)
+            for custom_sch_event_filter in self.__custom_sch_event_filters:
+                filter_objects.append((custom_sch_event_filter, True))
+
+        # Extract filter functions and register in schedule builder
         registered_names = set()
-        for filter_obj in filter_objects:
+        for filter_obj, is_custom in filter_objects:
             if filter_obj.get_name() in registered_names:
                 raise HandlerError('Attempting to re-register filter schedule event function: %s' % (filter_obj.get_name()))
             Logger.log('Registering filter event function: %s' % (filter_obj.get_name()), LoggerLevel.DEBUG)
-            sch_builder.register_filter_event_function(filter_obj.get_filter_function())
+            sch_builder.register_filter_event_function(filter_obj.get_filter_function(), test_run=not is_custom)
             registered_names.add(filter_obj.get_name())
         return super().handle(request)
