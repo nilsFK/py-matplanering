@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from py_matplanering.core.boundary.boundary_base import BoundaryBase
+from py_matplanering.core.boundary.boundary_base import BoundaryBase, BoundaryError
 from py_matplanering.core.context import BoundaryContext
 from py_matplanering.core.schedule.schedule import Schedule
 from py_matplanering.core.schedule.schedule import ScheduleEvent
@@ -36,12 +36,16 @@ class BoundaryDistance(BoundaryBase):
             return False
         grouped_events = sch.get_grouped_events(sch_event.get_id())
         for distance in self._boundary['distance']:
+            if not isinstance(distance['value'], int) or isinstance(distance['value'], bool):
+                raise BoundaryError('Unexpected distance value: %s (given date=%s, event id=%s, distance data=%s). Expected: int' % (distance['value'], date, sch_event.get_id(), distance))
             if distance['time_unit'] == 'day':
                 days = distance['value']
             elif distance['time_unit'] == 'week':
                 days = distance['value'] * 7
             elif distance['time_unit'] == 'month':
                 days = distance['value'] * 30
+            else:
+                raise BoundaryError('Unknown distance time unit: %s (given date=%s, event id=%s, distance data=%s)' % (distance['time_unit'], date, sch_event.get_id(), distance))
             start_date = time_helper.format_date(time_helper.add_days(time_helper.parse_date(date), -days+1))
             end_date = time_helper.format_date(time_helper.add_days(time_helper.parse_date(date), +days-1))
             examine_dates = time_helper.get_date_range(start_date, end_date)
