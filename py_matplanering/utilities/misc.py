@@ -61,13 +61,14 @@ def make_event_quota(startdate: str, enddate: str, quota_template: dict) -> list
                 last_day = enddate
             else:
                 last_day = last_day_in_year
-            final_range = time_helper.get_date_range(first_day, last_day)
-            new_quota = copy.copy(base_quota)
-            new_quota['dates'] = final_range
-            result.append(new_quota)
+            if first_day <= last_day:
+                final_range = time_helper.get_date_range(first_day, last_day)
+                new_quota = copy.copy(base_quota)
+                new_quota['dates'] = final_range
+                result.append(new_quota)
+                del final_range
             del first_day
             del last_day
-            del final_range
             del first_day_in_year
             del last_day_in_year
     elif base_quota['time_unit'] == 'half_year':
@@ -85,12 +86,13 @@ def make_event_quota(startdate: str, enddate: str, quota_template: dict) -> list
                 first_day = startdate
             else:
                 first_day = first_day_in_year
-            first_range = time_helper.get_date_range(first_day, center_day)
-            new_quota = copy.copy(base_quota)
-            new_quota['dates'] = first_range
-            result.append(new_quota)
+            if first_day <= center_day:
+                first_range = time_helper.get_date_range(first_day, center_day)
+                new_quota = copy.copy(base_quota)
+                new_quota['dates'] = first_range
+                result.append(new_quota)
+                del first_range
             del first_day
-            del first_range
             del first_day_in_year
 
             # Build second range
@@ -102,12 +104,13 @@ def make_event_quota(startdate: str, enddate: str, quota_template: dict) -> list
                 last_day = enddate
             else:
                 last_day = last_day_in_year
-            second_range = time_helper.get_date_range(center_day_plus_one, last_day)
-            new_quota = copy.copy(base_quota)
-            new_quota['dates']  = second_range
-            result.append(new_quota)
+            if center_day_plus_one <= last_day:
+                second_range = time_helper.get_date_range(center_day_plus_one, last_day)
+                new_quota = copy.copy(base_quota)
+                new_quota['dates']  = second_range
+                result.append(new_quota)
+                del second_range
             del last_day
-            del second_range
             del last_day_in_year
 
     elif base_quota['time_unit'] == 'month':

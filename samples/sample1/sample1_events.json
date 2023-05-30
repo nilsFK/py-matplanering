@@ -242,6 +242,22 @@
             "active": 1,
             "free_text": null,
             "rules": ["min_once_a_half_year"]
+        },
+        {
+            "id": 14,
+            "name": "min_once_a_year",
+            "link": null,
+            "difficulty": "medium",
+            "type": "beef",
+            "class": null,
+            "meta": {
+                "scope": null,
+                "key": "sides",
+                "value": null
+            },
+            "active": 1,
+            "free_text": null,
+            "rules": ["min_once_a_year"]
         }
     ]
 }
