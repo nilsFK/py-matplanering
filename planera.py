@@ -26,6 +26,9 @@ def make_schedule(args: dict) -> dict:
     planning_interval = None
     if args.get('planning_startdate') and args.get('planning_enddate'):
         planning_interval = (args['planning_startdate'], args['planning_enddate'])
+    exclude_event_ids = args.get('exclude_event_ids')
+    exclude_event_ids = exclude_event_ids.split(",") if exclude_event_ids else []
+    exclude_event_ids = [int(e) for e in exclude_event_ids]
     automator_ctrl = AutomatorController(sch_interval, sch_options=dict(
         include_props=['id', 'name', 'prio'],
         event_defaults=dict(
@@ -35,7 +38,10 @@ def make_schedule(args: dict) -> dict:
         planning_interval=planning_interval
     ), build_options=dict(
         iterations=args.get('iterations', 1),
-        strategy=args.get('strategy', misc.BuildStrategy.IGNORE_PLACED_DAYS)
+        strategy=args.get('strategy', misc.BuildStrategy.IGNORE_PLACED_DAYS),
+        planning=dict(
+            exclude_event_ids=exclude_event_ids
+        )
     ))
     planner = loader.build_planner(args['planner'])
     automator_ctrl.set_planner(planner)
@@ -295,7 +301,8 @@ if __name__ == '__main__':
         iter_method=config_data['iter_method'],
         schedule=sampled_schedule_obj,
         iterations=common.nvl_int(config_data['iterations']),
-        strategy=strategy
+        strategy=strategy,
+        exclude_event_ids=config_data.get('exclude_event_ids')
     ))
     if schedule is False:
         Logger.log('Schedule is False', LoggerLevel.FATAL)

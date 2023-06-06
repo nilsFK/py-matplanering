@@ -105,6 +105,25 @@ class DistanceScheduleEventFilter(BaseScheduleEventFilter):
             return filtered_sch_events
         return filter_fn
 
+class ExcludeEventIdsScheduleEventFilter(BaseScheduleEventFilter):
+    def __init__(self, exclude_event_ids: list):
+        self.__exclude_event_ids = exclude_event_ids
+
+    def get_name(self) -> str:
+        return 'default__exclude_event_ids_schedule_event_filter'
+
+    def get_filter_function(self) -> Callable:
+        def filter_fn(ctx: ScheduleEventFilterContext) -> List[ScheduleEvent]:
+            if len(self.__exclude_event_ids) == 0:
+                return ctx.get_schedule_events()
+            filtered_sch_events = []
+            for sch_event in ctx.get_schedule_events():
+                if sch_event.get_id() in self.__exclude_event_ids:
+                    continue
+                filtered_sch_events.append(sch_event)
+            return filtered_sch_events
+        return filter_fn
+
 class CustomScheduleEventFilter(BaseScheduleEventFilter):
     def __init__(self, name: str, filter_fn: Callable):
         self.__name = 'custom__%s' % (name)

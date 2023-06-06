@@ -110,7 +110,8 @@ class AutomatorController:
         # Create and configurate scheduler
         # ================================
         Logger.log('Create Scheduler', verbosity=LoggerLevel.DEBUG)
-        scheduler = Scheduler(self.__planner, self.__sch_options, self.__initial_schedule)
+        exclude_event_ids = self.__build_options['planning'].get('exclude_event_ids', [])
+        scheduler = Scheduler(self.__planner, self.__sch_options, self.__initial_schedule, exclude_event_ids)
         scheduler.set_strategy(self.__build_options['strategy'])
         scheduler.set_schedule_event_filters(self.__sch_event_filters)
         scheduler.pre_process()

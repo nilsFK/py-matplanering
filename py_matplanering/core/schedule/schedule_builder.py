@@ -56,7 +56,10 @@ class ScheduleBuilder:
         self.__build_status = None
         self.__build_options = dict(
             build_candidates=True,
-            apply_boundaries=True
+            apply_boundaries=True,
+            planning=dict(
+                exclude_event_ids=[]
+            )
         )
         self.sch_inp = None
         self.__planner = None

@@ -37,13 +37,14 @@ class SchedulerError(BaseError):
         return self.message
 
 class Scheduler:
-    def __init__(self, planner: PlannerBase, sch_options: dict, init_sch: Schedule=None):
+    def __init__(self, planner: PlannerBase, sch_options: dict, init_sch: Schedule=None, exclude_event_ids: list=[]):
         self.__planner = planner
         self.__sch_options = sch_options
         self.__init_sch = init_sch
         self.__strategy = misc.BuildStrategy.IGNORE_PLACED_DAYS
         self.__pre_processed = False
         self.__sch_event_filters = []
+        self.__exclude_event_ids = exclude_event_ids
 
     def set_strategy(self, strategy: misc.BuildStrategy):
         self.__strategy = strategy
@@ -73,7 +74,7 @@ class Scheduler:
 
     def create_schedule(self, sch_inp: ScheduleInput) -> Schedule:
         handler_order = [
-            SetupHandler().with_input(self.__planner, sch_inp, self.__sch_options, self.__init_sch, self.__sch_event_filters),
+            SetupHandler().with_input(self.__planner, sch_inp, self.__sch_options, self.__init_sch, self.__sch_event_filters, self.__exclude_event_ids),
             DeterminateDecideCandidateHandler(),
             IndeterminatePlanningHandler(),
             DeterminatePlanningHandler(),

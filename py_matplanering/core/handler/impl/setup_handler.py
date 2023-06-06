@@ -17,12 +17,13 @@ from typing import (Any)
 class SetupHandler(AbstractHandler):
     """ Handles initial setup of required objects such as builders and so on.
         (should be first handler) """
-    def with_input(self, planner: PlannerBase, sch_inp: ScheduleInput, sch_options: dict={}, init_sch: Schedule=None, sch_event_filters: list=[]):
+    def with_input(self, planner: PlannerBase, sch_inp: ScheduleInput, sch_options: dict={}, init_sch: Schedule=None, sch_event_filters: list=[], exclude_event_ids: list=[]):
         self.__planner = planner
         self.__sch_inp = sch_inp
         self.__sch_options = sch_options
         self.__init_sch = init_sch
         self.__custom_sch_event_filters = sch_event_filters
+        self.__exclude_event_ids = exclude_event_ids
         return self
 
     def handle(self, request: Any) -> Any:
@@ -36,6 +37,7 @@ class SetupHandler(AbstractHandler):
         # ordered filter functions by least time consuming in terms of complexity
         # to most time consuming.
         filter_objects = [
+            (schedule_event_filter.ExcludeEventIdsScheduleEventFilter(self.__exclude_event_ids), False),
             (schedule_event_filter.PlanningIntervalScheduleEventFilter(), False),
             (schedule_event_filter.PlacingScheduleEventFilter(), False),
             (schedule_event_filter.DateIntervalScheduleEventFilter(), False),
